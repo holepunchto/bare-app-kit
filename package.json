@@ -4,10 +4,11 @@
   "description": "AppKit runtime for Bare",
   "exports": {
     "./package": "./package.json",
-    ".": "./index.js"
+    "./runtime": "./runtime.js"
   },
   "files": [
     "index.js",
+    "runtime.js",
     "CMakeLists.txt",
     "lib",
     "prebuilds"
