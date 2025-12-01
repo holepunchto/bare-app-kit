@@ -62,9 +62,16 @@ static void
 bare__run(void) {
   int err;
 
+  err = bare_run(bare, UV_RUN_NOWAIT);
+  assert(err >= 0);
+
   int timeout = uv_backend_timeout(bare__loop);
 
-  if (timeout < 0) {
+  if (timeout == 0) {
+    dispatch_async(dispatch_get_main_queue(), ^{
+      bare__run();
+    });
+  } else if (timeout < 0) {
     dispatch_source_cancel(bare__timer);
   } else {
     uint64_t nanoseconds = (uint64_t) timeout * NSEC_PER_MSEC;
@@ -76,9 +83,6 @@ bare__run(void) {
       0
     );
   }
-
-  err = bare_run(bare, UV_RUN_NOWAIT);
-  assert(err >= 0);
 }
 
 static void
