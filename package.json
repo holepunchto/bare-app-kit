@@ -1,0 +1,38 @@
+{
+  "name": "bare-app-kit",
+  "version": "0.0.0",
+  "description": "AppKit runtime for Bare",
+  "exports": {
+    "./package": "./package.json",
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "CMakeLists.txt",
+    "lib",
+    "prebuilds"
+  ],
+  "scripts": {
+    "test": "prettier . --check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/holepunchto/bare-app-kit.git"
+  },
+  "author": "Holepunch",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/holepunchto/bare-app-kit/issues"
+  },
+  "homepage": "https://github.com/holepunchto/bare-app-kit#readme",
+  "dependencies": {
+    "require-asset": "^1.1.0"
+  },
+  "devDependencies": {
+    "brittle": "^3.18.0",
+    "cmake-bare": "^1.6.5",
+    "cmake-fetch": "^1.4.0",
+    "prettier": "^3.4.1",
+    "prettier-config-holepunch": "^2.0.0"
+  }
+}
