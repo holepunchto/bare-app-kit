@@ -8,6 +8,20 @@ project(bare_app_kit C OBJC)
 fetch_package("github:holepunchto/bare@1.24.5")
 fetch_package("github:holepunchto/libpath")
 
+add_bare_module(bare_app_kit)
+
+target_sources(
+  ${bare_app_kit}
+  PRIVATE
+    binding.m
+)
+
+target_link_libraries(
+  ${bare_app_kit}
+  PUBLIC
+    "-framework AppKit"
+)
+
 add_executable(bare_runtime)
 
 target_sources(
