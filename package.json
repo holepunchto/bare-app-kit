@@ -4,6 +4,7 @@
   "description": "AppKit runtime for Bare",
   "exports": {
     "./package": "./package.json",
+    ".": "./index.js",
     "./runtime": "./runtime.js"
   },
   "files": [
@@ -13,6 +14,7 @@
     "lib",
     "prebuilds"
   ],
+  "addon": true,
   "scripts": {
     "test": "prettier . --check"
   },
@@ -27,6 +29,7 @@
   },
   "homepage": "https://github.com/holepunchto/bare-app-kit#readme",
   "dependencies": {
+    "bare-events": "^2.8.2",
     "require-asset": "^1.1.0"
   },
   "devDependencies": {
