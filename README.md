@@ -1,6 +1,6 @@
 # bare-app-kit
 
-AppKit runtime for Bare.
+AppKit bindings and runtime for Bare.
 
 ```
 npm i bare-app-kit
