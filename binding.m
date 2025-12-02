@@ -21,7 +21,13 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   }
 
   V("windowInit", bare_app_kit_window_init)
-  V("windowMakeKeyAndOrderFront", bare_app_kit_window_make_key_and_order_front)
+  V("windowContentView", bare_app_kit_window_content_view)
+  V("windowTitlebarAppearsTransparent", bare_app_kit_window_titlebar_appears_transparent)
+  V("windowCenter", bare_app_kit_window_center)
+  V("windowClose", bare_app_kit_window_close)
+  V("windowMakeKeyWindow", bare_app_kit_window_make_key_window)
+  V("windowOrderBack", bare_app_kit_window_order_back)
+  V("windowOrderFront", bare_app_kit_window_order_front)
 #undef V
 
 #define V(name, n) \
@@ -38,6 +44,8 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("WINDOW_STYLE_MASK_CLOSABLE", NSWindowStyleMaskClosable)
   V("WINDOW_STYLE_MASK_MINIATURIZABLE", NSWindowStyleMaskMiniaturizable)
   V("WINDOW_STYLE_MASK_RESIZABLE", NSWindowStyleMaskResizable)
+  V("WINDOW_STYLE_MASK_FULL_SCREEN", NSWindowStyleMaskFullScreen)
+  V("WINDOW_STYLE_MASK_FULL_SIZE_CONTENT_VIEW", NSWindowStyleMaskFullSizeContentView)
 #undef V
 
   return exports;

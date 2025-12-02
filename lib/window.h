@@ -4,10 +4,7 @@
 
 #import <AppKit/AppKit.h>
 
-static void
-bare_app_kit__on_window_release(js_env_t *env, void *data, void *finalize_hint) {
-  CFBridgingRelease(data);
-}
+#import "bridging.h"
 
 @interface BareWindow : NSWindow <NSWindowDelegate> {
 @public
@@ -36,6 +33,7 @@ bare_app_kit__on_window_release(js_env_t *env, void *data, void *finalize_hint) 
 
   err = js_delete_reference(env, ctx);
   assert(err == 0);
+
   [super dealloc];
 }
 
@@ -154,7 +152,7 @@ bare_app_kit_window_init(js_env_t *env, js_callback_info_t *info) {
 
     handle.delegate = handle;
 
-    err = js_create_external(env, (void *) CFBridgingRetain(handle), bare_app_kit__on_window_release, NULL, &result);
+    err = js_create_external(env, (void *) CFBridgingRetain(handle), bare_app_kit__on_bridged_release, NULL, &result);
     assert(err == 0);
 
     handle->env = env;
@@ -176,7 +174,83 @@ bare_app_kit_window_init(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
-bare_app_kit_window_make_key_and_order_front(js_env_t *env, js_callback_info_t *info) {
+bare_app_kit_window_content_view(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    if (argc == 1) {
+      NSView *content_view = window.contentView;
+
+      err = js_create_external(env, (void *) CFBridgingRetain(content_view), bare_app_kit__on_bridged_release, NULL, &result);
+      assert(err == 0);
+    } else {
+      void *handle;
+      err = js_get_value_external(env, argv[1], &handle);
+      assert(err == 0);
+
+      NSView *content_view = (__bridge NSView *) handle;
+
+      window.contentView = content_view;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_window_titlebar_appears_transparent(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    if (argc == 1) {
+      err = js_get_boolean(env, window.titlebarAppearsTransparent, &result);
+      assert(err == 0);
+    } else {
+      bool value;
+      err = js_get_value_bool(env, argv[1], &value);
+      assert(err == 0);
+
+      window.titlebarAppearsTransparent = value;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_window_center(js_env_t *env, js_callback_info_t *info) {
   int err;
 
   size_t argc = 1;
@@ -194,7 +268,107 @@ bare_app_kit_window_make_key_and_order_front(js_env_t *env, js_callback_info_t *
   @autoreleasepool {
     BareWindow *window = (__bridge BareWindow *) handle;
 
-    [window makeKeyAndOrderFront:window];
+    [window center];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
+bare_app_kit_window_close(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    [window close];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
+bare_app_kit_window_make_key_window(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    [window makeKeyWindow];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
+bare_app_kit_window_order_back(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    [window orderBack:window];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
+bare_app_kit_window_order_front(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  err = js_get_value_external(env, argv[0], &handle);
+  assert(err == 0);
+
+  @autoreleasepool {
+    BareWindow *window = (__bridge BareWindow *) handle;
+
+    [window orderFront:window];
   }
 
   return NULL;
