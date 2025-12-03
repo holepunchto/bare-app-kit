@@ -103,10 +103,6 @@ bare__launch(void) {
   err = uv_exepath(bin, &len);
   assert(err == 0);
 
-  size_t dir;
-  err = path_dirname(bin, &dir, path_behavior_system);
-  assert(err == 0);
-
   char entry[4096];
   len = 4096;
 
@@ -209,10 +205,6 @@ main(int argc, char *argv[]) {
   len = sizeof(bin);
 
   err = uv_exepath(bin, &len);
-  assert(err == 0);
-
-  size_t dir;
-  err = path_dirname(bin, &dir, path_behavior_system);
   assert(err == 0);
 
   char preflight[4096];
