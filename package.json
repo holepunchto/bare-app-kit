@@ -9,6 +9,8 @@
   },
   "files": [
     "index.js",
+    "binding.m",
+    "binding.js",
     "runtime.js",
     "CMakeLists.txt",
     "lib",
