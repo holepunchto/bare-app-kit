@@ -13,7 +13,7 @@ jobs:
             platform: darwin
             arch: arm64
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.tags }}
+    name: ${{ matrix.platform }}-${{ matrix.arch }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -22,12 +22,12 @@ jobs:
       - run: brew install llvm@20
       - run: npm install -g bare-runtime bare-make
       - run: npm install
-      - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }} ${{ matrix.flags }}
+      - run: bare-make generate --platform ${{ matrix.platform }} --arch ${{ matrix.arch }}
       - run: bare-make build
       - run: bare-make install
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}-${{ matrix.arch }}${{ matrix.tags }}
+          name: ${{ matrix.platform }}-${{ matrix.arch }}
           path: prebuilds/*
   merge:
     runs-on: ubuntu-latest
