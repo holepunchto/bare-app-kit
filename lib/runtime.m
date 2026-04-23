@@ -140,6 +140,23 @@ bare__terminate(void) {
 
   err = bare_terminate(bare);
   assert(err == 0);
+
+  err = bare_run(bare, UV_RUN_NOWAIT);
+  assert(err >= 0);
+
+  int exit_code;
+  err = bare_teardown(bare, UV_RUN_DEFAULT, &exit_code);
+  assert(err == 0);
+
+  err = uv_loop_close(bare__loop);
+  assert(err == 0);
+
+  err = uv_async_send(&bare__platform_shutdown);
+  assert(err == 0);
+
+  uv_thread_join(&bare__platform_thread);
+
+  if (exit_code != 0) _exit(exit_code);
 }
 
 @interface BareApp : NSApplication <NSApplicationDelegate>
