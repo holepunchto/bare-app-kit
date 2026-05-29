@@ -23,8 +23,6 @@ jobs:
         with:
           platform: ${{ matrix.platform }}
           arch: ${{ matrix.arch }}
-          flags: ${{ matrix.flags }}
-          tags: ${{ matrix.tags}}
           upload: true
   merge:
     runs-on: ubuntu-latest
