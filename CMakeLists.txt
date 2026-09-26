@@ -16,10 +16,17 @@ target_sources(
     binding.m
 )
 
+target_include_directories(
+  ${bare_app_kit}
+  PRIVATE
+    node_modules/bare-foundation-registry/lib
+)
+
 target_link_libraries(
   ${bare_app_kit}
   PUBLIC
     "-framework AppKit"
+    "-framework UniformTypeIdentifiers"
 )
 
 add_executable(bare_runtime)

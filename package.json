@@ -34,6 +34,7 @@
   "homepage": "https://github.com/holepunchto/bare-app-kit#readme",
   "dependencies": {
     "bare-events": "^2.8.2",
+    "bare-foundation-registry": "^0.1.0",
     "require-asset": "^1.1.0"
   },
   "peerDependencies": {
