@@ -6,6 +6,38 @@
 
 #import "bridging.h"
 
+@interface BareScrollView : NSScrollView <BareEventTarget> {
+@public
+  js_env_t *env;
+  js_ref_t *ctx;
+  int32_t mask;
+}
+
+@end
+
+@implementation BareScrollView
+
+- (void)dealloc {
+  int err;
+
+  err = js_delete_reference(env, ctx);
+  assert(err == 0);
+
+  [super dealloc];
+}
+
+- (int32_t)eventMask {
+  return mask;
+}
+
+- (void)setEventMask:(int32_t)value {
+  mask = value;
+}
+
+BARE_APP_KIT_REPORTS_WILL_DRAW(1 << 0)
+
+@end
+
 static js_value_t *
 bare_app_kit_scroll_view_init(js_env_t *env, js_callback_info_t *info) {
   int err;
@@ -37,10 +69,17 @@ bare_app_kit_scroll_view_init(js_env_t *env, js_callback_info_t *info) {
   js_value_t *result;
 
   @autoreleasepool {
-    NSScrollView *handle = [[[NSScrollView alloc]
+    BareScrollView *handle = [[[BareScrollView alloc]
       initWithFrame:NSMakeRect(x, y, width, height)] autorelease];
 
     result = bare_foundation__bridge(env, handle);
+
+    handle->env = env;
+
+    // Weak, so that the native object does not keep its own JS wrapper
+    // alive. Events are dropped once the wrapper has been collected.
+    err = js_create_reference(env, argv[4], 0, &handle->ctx);
+    assert(err == 0);
   }
 
   return result;

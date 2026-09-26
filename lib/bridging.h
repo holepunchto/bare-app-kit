@@ -234,6 +234,19 @@ bare_app_kit__handler(js_env_t *env, js_value_t *receiver, const char *name, js_
   return type == js_function;
 }
 
+// AppKit clears whatever sits on a layer-backed view's layer when it realises
+// the layer tree, the transform included, and changes no frame doing it. A
+// view says when it is about to draw, which is after that, so what was on the
+// layer can go back on.
+#define BARE_APP_KIT_REPORTS_WILL_DRAW(bit) \
+  -(void)viewWillDraw { \
+    [super viewWillDraw]; \
+\
+    if ((mask & (bit)) == 0) return; \
+\
+    bare_app_kit__emit(env, ctx, "_onwilldraw"); \
+  }
+
 static void
 bare_app_kit__emit(js_env_t *env, js_ref_t *ctx, const char *name) {
   int err;

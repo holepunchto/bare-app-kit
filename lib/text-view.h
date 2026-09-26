@@ -76,6 +76,8 @@
   return became;
 }
 
+BARE_APP_KIT_REPORTS_WILL_DRAW(1 << 6)
+
 @end
 
 static js_value_t *

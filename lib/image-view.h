@@ -40,6 +40,8 @@
   bare_app_kit__emit(env, ctx, "_onchange");
 }
 
+BARE_APP_KIT_REPORTS_WILL_DRAW(1 << 1)
+
 @end
 
 static js_value_t *

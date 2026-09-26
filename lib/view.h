@@ -23,6 +23,7 @@ enum {
   bare_app_kit_view_event_key_down = 1 << 9,
   bare_app_kit_view_event_key_up = 1 << 10,
   bare_app_kit_view_event_flags_changed = 1 << 11,
+  bare_app_kit_view_event_will_draw = 1 << 12,
 };
 
 @interface BareView : NSView <BareEventTarget> {
@@ -62,6 +63,14 @@ enum {
 
 - (BOOL)acceptsFirstResponder {
   return accepts_first_responder;
+}
+
+- (void)viewWillDraw {
+  [super viewWillDraw];
+
+  if ((mask & bare_app_kit_view_event_will_draw) == 0) return;
+
+  bare_app_kit__emit(env, ctx, "_onwilldraw");
 }
 
 - (void)bareEmit:(int32_t)type event:(NSEvent *)event a:(double)a b:(double)b {

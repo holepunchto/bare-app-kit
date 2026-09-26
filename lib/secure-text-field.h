@@ -96,6 +96,8 @@
   return resigned;
 }
 
+BARE_APP_KIT_REPORTS_WILL_DRAW(1 << 8)
+
 @end
 
 static js_value_t *

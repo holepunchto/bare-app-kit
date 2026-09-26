@@ -4723,6 +4723,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("VIEW_EVENT_KEY_DOWN", bare_app_kit_view_event_key_down)
   V("VIEW_EVENT_KEY_UP", bare_app_kit_view_event_key_up)
   V("VIEW_EVENT_FLAGS_CHANGED", bare_app_kit_view_event_flags_changed)
+  V("VIEW_EVENT_WILL_DRAW", bare_app_kit_view_event_will_draw)
 
   V("VIEW_FOCUS_RING_TYPE_DEFAULT", NSFocusRingTypeDefault)
   V("VIEW_FOCUS_RING_TYPE_NONE", NSFocusRingTypeNone)
