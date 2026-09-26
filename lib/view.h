@@ -34,6 +34,7 @@ enum {
   int32_t mask;
   bool flipped;
   bool accepts_first_responder;
+  bool hit_testable;
 }
 
 @end
@@ -63,6 +64,16 @@ enum {
 
 - (BOOL)acceptsFirstResponder {
   return accepts_first_responder;
+}
+
+// The one thing here that AppKit has no property for. A view is a hit target
+// or it is not, which UIKit, GTK and WinUI each say with a property of their
+// own, and AppKit says only by overriding this. Returning nil takes the
+// subviews out of the hit with it, which is what not being a target means.
+- (NSView *)hitTest:(NSPoint)point {
+  if (!hit_testable) return nil;
+
+  return [super hitTest:point];
 }
 
 - (void)viewWillDraw {
@@ -186,6 +197,7 @@ bare_app_kit_view_init(js_env_t *env, js_callback_info_t *info) {
     result = bare_foundation__bridge(env, handle);
 
     handle->env = env;
+    handle->hit_testable = true;
 
     err = js_create_reference(env, argv[4], 0, &handle->ctx);
     assert(err == 0);
@@ -1612,6 +1624,48 @@ bare_app_kit_view_accepts_first_responder(js_env_t *env, js_callback_info_t *inf
       if (!bare_app_kit__read_bool(env, argv[1], "accepts", &accepts)) return NULL;
 
       ((BareView *) view)->accepts_first_responder = accepts;
+    }
+  }
+
+  return result;
+}
+
+
+static js_value_t *
+bare_app_kit_view_hit_testable(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (!bare_foundation__read_tag(env, argv[0], "handle", &handle)) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSView *view = (__bridge NSView *) handle;
+
+    if (![view isKindOfClass:BareView.class]) {
+      err = js_throw_type_error(env, NULL, "Only a View has 'hitTestable'");
+      assert(err == 0);
+
+      return NULL;
+    }
+
+    if (argc == 1) {
+      err = js_get_boolean(env, ((BareView *) view)->hit_testable, &result);
+      assert(err == 0);
+    } else {
+      bool testable;
+      if (!bare_app_kit__read_bool(env, argv[1], "testable", &testable)) return NULL;
+
+      ((BareView *) view)->hit_testable = testable;
     }
   }
 

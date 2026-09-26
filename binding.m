@@ -3852,6 +3852,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
 
   V("viewInit", bare_app_kit_view_init)
   V("viewAcceptsFirstResponder", bare_app_kit_view_accepts_first_responder)
+  V("viewHitTestable", bare_app_kit_view_hit_testable)
   T(
     "viewFrame",
     bare_app_kit_view_frame,
