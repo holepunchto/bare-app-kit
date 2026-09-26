@@ -1302,3 +1302,29 @@ bare_app_kit_text_view_set_attributed_string(js_env_t *env, js_callback_info_t *
 
   return NULL;
 }
+
+static js_value_t *
+bare_app_kit_text_view_text_container(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  if (!bare_foundation__read_tag(env, argv[0], "handle", &handle)) return NULL;
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    NSTextView *text_view = (__bridge NSTextView *) handle;
+
+    result = bare_foundation__bridge(env, text_view.textContainer);
+  }
+
+  return result;
+}

@@ -69,6 +69,8 @@
 #import "lib/table-header-view.h"
 #import "lib/table-view.h"
 #import "lib/text-field.h"
+#import "lib/cell.h"
+#import "lib/text-container.h"
 #import "lib/text-view.h"
 #import "lib/text-measurer.h"
 #import "lib/text.h"
@@ -3410,7 +3412,16 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("textMeasurerMeasure", bare_app_kit_text_measurer_measure)
   V("textMeasurerMeasureAttributed", bare_app_kit_text_measurer_measure_attributed)
 
+
+  V("cellDrawingRectForBounds", bare_app_kit_cell_drawing_rect_for_bounds)
+  V("cellImageRectForBounds", bare_app_kit_cell_image_rect_for_bounds)
+  V("cellTitleRectForBounds", bare_app_kit_cell_title_rect_for_bounds)
+  V("controlCell", bare_app_kit_control_cell)
+
+  V("textContainerLineFragmentPadding", bare_app_kit_text_container_line_fragment_padding)
+
   V("textViewInit", bare_app_kit_text_view_init)
+  V("textViewTextContainer", bare_app_kit_text_view_text_container)
   V("textSelectedRange", bare_app_kit_text_selected_range)
   T(
     "textViewTextContainerInset",
