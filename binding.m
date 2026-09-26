@@ -3379,6 +3379,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
     }),
     bare_app_kit_text_field_bezel_style_typed
   )
+  V("textFieldTruncatesLastVisibleLine", bare_app_kit_text_field_truncates_last_visible_line)
   T(
     "textFieldMaximumNumberOfLines",
     bare_app_kit_text_field_maximum_number_of_lines,

@@ -525,6 +525,44 @@ bare_app_kit_text_field_bezel_style_typed(js_value_t *receiver, int32_t bare_tag
   }
 }
 
+// Whether a field that wraps marks the line it stops on. A paragraph style's
+// own truncation stops the text wrapping at all, and the cell's break mode is
+// overridden by the style the string carries, so this is what puts an ellipsis
+// at the end of a field that wrapped to its limit.
+static js_value_t *
+bare_app_kit_text_field_truncates_last_visible_line(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (!bare_foundation__read_tag(env, argv[0], "handle", &handle)) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSTextField *text_field = (__bridge NSTextField *) handle;
+
+    if (argc == 1) {
+      err = js_get_boolean(env, text_field.cell.truncatesLastVisibleLine, &result);
+      assert(err == 0);
+    } else {
+      bool truncates;
+      if (!bare_app_kit__read_bool(env, argv[1], "truncates_last_visible_line", &truncates)) return NULL;
+
+      text_field.cell.truncatesLastVisibleLine = truncates;
+    }
+  }
+
+  return result;
+}
+
 static js_value_t *
 bare_app_kit_text_field_maximum_number_of_lines(js_env_t *env, js_callback_info_t *info) {
   int err;
