@@ -4,11 +4,19 @@
   "description": "AppKit bindings and runtime for Bare",
   "exports": {
     "./package": "./package.json",
-    ".": "./index.js",
-    "./runtime": "./runtime.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./runtime": "./runtime.js",
+    "./*": {
+      "types": "./lib/*.d.ts",
+      "default": "./lib/*.js"
+    }
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "binding.m",
     "binding.js",
     "runtime.js",
@@ -34,6 +42,7 @@
   "homepage": "https://github.com/holepunchto/bare-app-kit#readme",
   "dependencies": {
     "bare-events": "^2.8.2",
+    "bare-foundation-registry": "^0.1.0",
     "require-asset": "^1.1.0"
   },
   "peerDependencies": {

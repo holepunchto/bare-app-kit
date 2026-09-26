@@ -13,35 +13,31 @@ bare_app_kit_text_init(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 4;
   js_value_t *argv[4];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 4);
 
   double x;
-  err = js_get_value_double(env, argv[0], &x);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[0], "x", &x)) return NULL;
 
   double y;
-  err = js_get_value_double(env, argv[1], &y);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[1], "y", &y)) return NULL;
 
   double width;
-  err = js_get_value_double(env, argv[2], &width);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[2], "width", &width)) return NULL;
 
   double height;
-  err = js_get_value_double(env, argv[3], &height);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[3], "height", &height)) return NULL;
 
   js_value_t *result;
 
   @autoreleasepool {
-    NSText *handle = [[NSText alloc]
-      initWithFrame:NSMakeRect(x, y, width, height)];
+    NSText *handle = [[[NSText alloc]
+      initWithFrame:NSMakeRect(x, y, width, height)] autorelease];
 
-    err = js_create_external(env, (void *) CFBridgingRetain(handle), bare_app_kit__on_bridged_release, NULL, &result);
-    assert(err == 0);
+    result = bare_foundation_bridge(env, registry, handle);
   }
 
   return result;
@@ -54,14 +50,14 @@ bare_app_kit_text_string(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -69,23 +65,9 @@ bare_app_kit_text_string(js_env_t *env, js_callback_info_t *info) {
     NSText *text = (__bridge NSText *) handle;
 
     if (argc == 1) {
-      err = js_create_string_utf8(env, (const utf8_t *) [text.string UTF8String], -1, &result);
-      assert(err == 0);
+      result = bare_app_kit__from_string(env, text.string);
     } else {
-      size_t len;
-      err = js_get_value_string_utf8(env, argv[1], NULL, 0, &len);
-      assert(err == 0);
-
-      len += 1 /* NULL */;
-
-      char *string = malloc(len);
-
-      err = js_get_value_string_utf8(env, argv[1], (utf8_t *) string, len, &len);
-      assert(err == 0);
-
-      text.string = [NSString stringWithUTF8String:string];
-
-      free(string);
+      text.string = bare_app_kit__to_string(env, argv[1]);
     }
   }
 
@@ -99,14 +81,14 @@ bare_app_kit_text_editable(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -118,8 +100,7 @@ bare_app_kit_text_editable(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool editable;
-      err = js_get_value_bool(env, argv[1], &editable);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "editable", &editable)) return NULL;
 
       text.editable = editable;
     }
@@ -135,14 +116,14 @@ bare_app_kit_text_selectable(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -154,8 +135,7 @@ bare_app_kit_text_selectable(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool selectable;
-      err = js_get_value_bool(env, argv[1], &selectable);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "selectable", &selectable)) return NULL;
 
       text.selectable = selectable;
     }
@@ -171,14 +151,14 @@ bare_app_kit_text_rich_text(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -190,8 +170,7 @@ bare_app_kit_text_rich_text(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool rich_text;
-      err = js_get_value_bool(env, argv[1], &rich_text);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "rich_text", &rich_text)) return NULL;
 
       text.richText = rich_text;
     }
@@ -207,14 +186,14 @@ bare_app_kit_text_imports_graphics(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -226,8 +205,7 @@ bare_app_kit_text_imports_graphics(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool imports_graphics;
-      err = js_get_value_bool(env, argv[1], &imports_graphics);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "imports_graphics", &imports_graphics)) return NULL;
 
       text.importsGraphics = imports_graphics;
     }
@@ -243,14 +221,14 @@ bare_app_kit_text_field_editor(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -262,8 +240,7 @@ bare_app_kit_text_field_editor(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool field_editor;
-      err = js_get_value_bool(env, argv[1], &field_editor);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "field_editor", &field_editor)) return NULL;
 
       text.fieldEditor = field_editor;
     }
@@ -279,14 +256,14 @@ bare_app_kit_text_uses_font_panel(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -298,8 +275,7 @@ bare_app_kit_text_uses_font_panel(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool uses_font_panel;
-      err = js_get_value_bool(env, argv[1], &uses_font_panel);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "uses_font_panel", &uses_font_panel)) return NULL;
 
       text.usesFontPanel = uses_font_panel;
     }
@@ -315,14 +291,14 @@ bare_app_kit_text_draws_background(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -334,8 +310,7 @@ bare_app_kit_text_draws_background(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool draws_background;
-      err = js_get_value_bool(env, argv[1], &draws_background);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "draws_background", &draws_background)) return NULL;
 
       text.drawsBackground = draws_background;
     }
@@ -351,14 +326,14 @@ bare_app_kit_text_ruler_visible(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result;
 
@@ -379,14 +354,14 @@ bare_app_kit_text_alignment(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -415,14 +390,14 @@ bare_app_kit_text_base_writing_direction(js_env_t *env, js_callback_info_t *info
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -451,14 +426,14 @@ bare_app_kit_text_copy(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -476,14 +451,14 @@ bare_app_kit_text_cut(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -501,14 +476,14 @@ bare_app_kit_text_delete(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -526,14 +501,14 @@ bare_app_kit_text_paste(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -551,14 +526,14 @@ bare_app_kit_text_select_all(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -576,14 +551,14 @@ bare_app_kit_text_size_to_fit(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSText *text = (__bridge NSText *) handle;
@@ -592,4 +567,492 @@ bare_app_kit_text_size_to_fit(js_env_t *env, js_callback_info_t *info) {
   }
 
   return NULL;
+}
+
+static js_value_t *
+bare_app_kit_text_font(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, text.font);
+    } else {
+      text.font = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_text_color(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, text.textColor);
+    } else {
+      text.textColor = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_background_color(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, text.backgroundColor);
+    } else {
+      text.backgroundColor = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_vertically_resizable(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      err = js_get_boolean(env, text.verticallyResizable, &result);
+      assert(err == 0);
+    } else {
+      bool vertically_resizable;
+      if (!bare_app_kit__read_bool(env, argv[1], "vertically_resizable", &vertically_resizable)) return NULL;
+
+      text.verticallyResizable = vertically_resizable;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_horizontally_resizable(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      err = js_get_boolean(env, text.horizontallyResizable, &result);
+      assert(err == 0);
+    } else {
+      bool horizontally_resizable;
+      if (!bare_app_kit__read_bool(env, argv[1], "horizontally_resizable", &horizontally_resizable)) return NULL;
+
+      text.horizontallyResizable = horizontally_resizable;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_min_size(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 3);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_app_kit__from_size(env, text.minSize);
+    } else {
+      double width;
+      if (!bare_app_kit__read_double(env, argv[1], "width", &width)) return NULL;
+
+      double height;
+      if (!bare_app_kit__read_double(env, argv[2], "height", &height)) return NULL;
+
+      text.minSize = NSMakeSize(width, height);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_text_max_size(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 3);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_app_kit__from_size(env, text.maxSize);
+    } else {
+      double width;
+      if (!bare_app_kit__read_double(env, argv[1], "width", &width)) return NULL;
+
+      double height;
+      if (!bare_app_kit__read_double(env, argv[2], "height", &height)) return NULL;
+
+      text.maxSize = NSMakeSize(width, height);
+    }
+  }
+
+  return result;
+}
+
+static void
+bare_app_kit_text_vertically_resizable_typed(js_value_t *receiver, int32_t bare_tag, bool vertically_resizable, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    text.verticallyResizable = vertically_resizable;
+  }
+}
+
+static void
+bare_app_kit_text_horizontally_resizable_typed(js_value_t *receiver, int32_t bare_tag, bool horizontally_resizable, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    text.horizontallyResizable = horizontally_resizable;
+  }
+}
+
+static void
+bare_app_kit_text_min_size_typed(js_value_t *receiver, int32_t bare_tag, double width, double height, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    text.minSize = NSMakeSize(width, height);
+  }
+}
+
+static void
+bare_app_kit_text_max_size_typed(js_value_t *receiver, int32_t bare_tag, double width, double height, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    text.maxSize = NSMakeSize(width, height);
+  }
+}
+
+static js_value_t *
+bare_app_kit_text_min_size_into(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 3);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  uint32_t offset;
+  if (!bare_app_kit__read_uint32(env, argv[2], "offset", &offset)) return NULL;
+
+  double *out;
+
+  if (!bare_app_kit__buffer(env, argv[1], offset, 2, &out)) {
+    err = js_throw_type_error(env, NULL, "Expected an array buffer with room for 2 doubles");
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    __typeof__(text.minSize) value = text.minSize;
+
+    out[0] = value.width;
+    out[1] = value.height;
+  }
+
+  return NULL;
+}
+
+static void
+bare_app_kit_text_min_size_into_typed(js_value_t *receiver, int32_t bare_tag, js_value_t *bare_buffer, uint32_t bare_offset, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+
+  js_env_t *env;
+  err = js_get_typed_callback_info(info, &env, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  double *out;
+
+  if (!bare_app_kit__buffer(env, bare_buffer, bare_offset, 2, &out)) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    __typeof__(text.minSize) value = text.minSize;
+
+    out[0] = value.width;
+    out[1] = value.height;
+  }
+}
+
+static js_value_t *
+bare_app_kit_text_max_size_into(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 3);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  uint32_t offset;
+  if (!bare_app_kit__read_uint32(env, argv[2], "offset", &offset)) return NULL;
+
+  double *out;
+
+  if (!bare_app_kit__buffer(env, argv[1], offset, 2, &out)) {
+    err = js_throw_type_error(env, NULL, "Expected an array buffer with room for 2 doubles");
+    assert(err == 0);
+
+    return NULL;
+  }
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    __typeof__(text.maxSize) value = text.maxSize;
+
+    out[0] = value.width;
+    out[1] = value.height;
+  }
+
+  return NULL;
+}
+
+static void
+bare_app_kit_text_max_size_into_typed(js_value_t *receiver, int32_t bare_tag, js_value_t *bare_buffer, uint32_t bare_offset, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+
+  js_env_t *env;
+  err = js_get_typed_callback_info(info, &env, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  double *out;
+
+  if (!bare_app_kit__buffer(env, bare_buffer, bare_offset, 2, &out)) return;
+
+  @autoreleasepool {
+    NSText *text = (NSText *) bare_object;
+
+    __typeof__(text.maxSize) value = text.maxSize;
+
+    out[0] = value.width;
+    out[1] = value.height;
+  }
+}
+
+static js_value_t *
+bare_app_kit_text_selected_range(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 3;
+  js_value_t *argv[3];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 3);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSText *text = (__bridge NSText *) handle;
+
+    if (argc == 1) {
+      result = bare_app_kit__from_range(env, text.selectedRange);
+    } else {
+      int32_t location;
+      err = js_get_value_int32(env, argv[1], &location);
+      assert(err == 0);
+
+      int32_t length;
+      err = js_get_value_int32(env, argv[2], &length);
+      assert(err == 0);
+
+      text.selectedRange = NSMakeRange(location, length);
+    }
+  }
+
+  return result;
 }

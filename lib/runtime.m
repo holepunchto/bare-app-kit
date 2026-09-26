@@ -208,6 +208,11 @@ bare__terminate(void) {
   if (exit_code != 0) _exit(exit_code);
 }
 
+// The answer to `applicationShouldTerminateAfterLastWindowClosed:`, which is
+// the application's to decide. An application that replaces its window, as one
+// being refreshed does, would otherwise quit while it has none.
+bool bare_native_terminates_after_last_window_closed = true;
+
 @interface BareApp : NSApplication <NSApplicationDelegate>
 
 @end
@@ -223,7 +228,7 @@ bare__terminate(void) {
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender {
-  return YES;
+  return bare_native_terminates_after_last_window_closed;
 }
 
 @end

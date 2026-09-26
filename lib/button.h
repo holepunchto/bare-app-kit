@@ -6,26 +6,33 @@
 
 #import "bridging.h"
 
-@interface BareButton : NSButton {
+enum {
+  bare_app_kit_button_event_mouse_down = 1 << 0,
+  bare_app_kit_button_event_click = 1 << 1,
+};
+
+
+@interface BareButton : NSButton <BareEventTarget> {
 @public
   js_env_t *env;
   js_ref_t *ctx;
-  js_ref_t *on_mouse_down;
-  js_ref_t *on_click;
+  int32_t mask;
 }
 
 @end
 
 @implementation BareButton
 
+- (int32_t)eventMask {
+  return mask;
+}
+
+- (void)setEventMask:(int32_t)value {
+  mask = value;
+}
+
 - (void)dealloc {
   int err; 
-
-  err = js_delete_reference(env, on_mouse_down);
-  assert(err == 0);
-
-  err = js_delete_reference(env, on_click);
-  assert(err == 0);
 
   err = js_delete_reference(env, ctx);
   assert(err == 0);
@@ -34,49 +41,13 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
-  int err;
-
-  js_handle_scope_t *scope;
-  err = js_open_handle_scope(env, &scope);
-  assert(err == 0);
-
-  js_value_t *receiver;
-  err = js_get_reference_value(env, ctx, &receiver);
-  assert(err == 0);
-
-  js_value_t *callback;
-  err = js_get_reference_value(env, on_mouse_down, &callback);
-  assert(err == 0);
-
-  err = js_call_function(env, receiver, callback, 0, NULL, NULL);
-  (void) err;
-
-  err = js_close_handle_scope(env, scope);
-  assert(err == 0);
+  if (mask & bare_app_kit_button_event_mouse_down) bare_app_kit__emit(env, ctx, "_onmousedown");
 
   [super mouseDown:event];
 }
 
 - (void)onClick:(id)sender {
-  int err;
-
-  js_handle_scope_t *scope;
-  err = js_open_handle_scope(env, &scope);
-  assert(err == 0);
-
-  js_value_t *receiver;
-  err = js_get_reference_value(env, ctx, &receiver);
-  assert(err == 0);
-
-  js_value_t *callback;
-  err = js_get_reference_value(env, on_click, &callback);
-  assert(err == 0);
-
-  err = js_call_function(env, receiver, callback, 0, NULL, NULL);
-  (void) err;
-
-  err = js_close_handle_scope(env, scope);
-  assert(err == 0);
+  if (mask & bare_app_kit_button_event_click) bare_app_kit__emit(env, ctx, "_onclick");
 }
 
 @end
@@ -85,48 +56,40 @@ static js_value_t *
 bare_app_kit_button_init(js_env_t *env, js_callback_info_t *info) {
   int err;
 
-  size_t argc = 7;
-  js_value_t *argv[7];
+  size_t argc = 5;
+  js_value_t *argv[5];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
-  assert(argc == 7);
+  assert(argc == 5);
 
   double x;
-  err = js_get_value_double(env, argv[0], &x);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[0], "x", &x)) return NULL;
 
   double y;
-  err = js_get_value_double(env, argv[1], &y);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[1], "y", &y)) return NULL;
 
   double width;
-  err = js_get_value_double(env, argv[2], &width);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[2], "width", &width)) return NULL;
 
   double height;
-  err = js_get_value_double(env, argv[3], &height);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[3], "height", &height)) return NULL;
 
   js_value_t *result;
 
   @autoreleasepool {
-    BareButton *handle = [[BareButton alloc]
-      initWithFrame:NSMakeRect(x, y, width, height)];
+    BareButton *handle = [[[BareButton alloc]
+      initWithFrame:NSMakeRect(x, y, width, height)] autorelease];
 
-    err = js_create_external(env, (void *) CFBridgingRetain(handle), bare_app_kit__on_bridged_release, NULL, &result);
-    assert(err == 0);
+    result = bare_foundation_bridge(env, registry, handle);
 
     handle->env = env;
 
-    err = js_create_reference(env, argv[4], 1, &handle->ctx);
-    assert(err == 0);
-
-    err = js_create_reference(env, argv[5], 1, &handle->on_mouse_down);
-    assert(err == 0);
-
-    err = js_create_reference(env, argv[6], 1, &handle->on_click);
+    // Weak, so the native object does not keep its own wrapper alive. Events
+    // are dropped once the wrapper is collected.
+    err = js_create_reference(env, argv[4], 0, &handle->ctx);
     assert(err == 0);
 
     [handle setTarget:handle];
@@ -143,14 +106,14 @@ bare_app_kit_button_title(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -158,25 +121,9 @@ bare_app_kit_button_title(js_env_t *env, js_callback_info_t *info) {
     BareButton *button = (__bridge BareButton *) handle;
 
     if (argc == 1) {
-      NSString *title = [button title];
-
-      err = js_create_string_utf8(env, (const utf8_t *) [title UTF8String], -1, &result);
-      assert(err == 0);
+      result = bare_app_kit__from_string(env, [button title]);
     } else {
-      size_t len;
-      err = js_get_value_string_utf8(env, argv[1], NULL, 0, &len);
-      assert(err == 0);
-
-      len += 1 /* NULL */;
-
-      char *title = malloc(len);
-
-      err = js_get_value_string_utf8(env, argv[1], (utf8_t *) title, len, &len);
-      assert(err == 0);
-
-      [button setTitle:[NSString stringWithUTF8String:title]];
-
-      free(title);
+      [button setTitle:bare_app_kit__to_string(env, argv[1])];
     }
   }
 
@@ -190,14 +137,14 @@ bare_app_kit_button_alternate_title(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -205,25 +152,9 @@ bare_app_kit_button_alternate_title(js_env_t *env, js_callback_info_t *info) {
     BareButton *button = (__bridge BareButton *) handle;
 
     if (argc == 1) {
-      NSString *alternate_title = [button alternateTitle];
-
-      err = js_create_string_utf8(env, (const utf8_t *) [alternate_title UTF8String], -1, &result);
-      assert(err == 0);
+      result = bare_app_kit__from_string(env, [button alternateTitle]);
     } else {
-      size_t len;
-      err = js_get_value_string_utf8(env, argv[1], NULL, 0, &len);
-      assert(err == 0);
-
-      len += 1 /* NULL */;
-
-      char *alternate_title = malloc(len);
-
-      err = js_get_value_string_utf8(env, argv[1], (utf8_t *) alternate_title, len, &len);
-      assert(err == 0);
-
-      [button setAlternateTitle:[NSString stringWithUTF8String:alternate_title]];
-
-      free(alternate_title);
+      [button setAlternateTitle:bare_app_kit__to_string(env, argv[1])];
     }
   }
 
@@ -237,14 +168,14 @@ bare_app_kit_button_state(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -256,8 +187,7 @@ bare_app_kit_button_state(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       int32_t state;
-      err = js_get_value_int32(env, argv[1], &state);
-      assert(err == 0);
+      if (!bare_app_kit__read_int32(env, argv[1], "state", &state)) return NULL;
 
       button.state = state;
     }
@@ -273,14 +203,14 @@ bare_app_kit_button_allows_mixed_state(js_env_t *env, js_callback_info_t *info) 
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -292,8 +222,7 @@ bare_app_kit_button_allows_mixed_state(js_env_t *env, js_callback_info_t *info) 
       assert(err == 0);
     } else {
       bool allows_mixed_state;
-      err = js_get_value_bool(env, argv[1], &allows_mixed_state);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "allows_mixed_state", &allows_mixed_state)) return NULL;
 
       button.allowsMixedState = allows_mixed_state;
     }
@@ -309,14 +238,14 @@ bare_app_kit_button_bezel_style(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -328,8 +257,7 @@ bare_app_kit_button_bezel_style(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       int32_t bezel_style;
-      err = js_get_value_int32(env, argv[1], &bezel_style);
-      assert(err == 0);
+      if (!bare_app_kit__read_int32(env, argv[1], "bezel_style", &bezel_style)) return NULL;
 
       button.bezelStyle = bezel_style;
     }
@@ -345,14 +273,14 @@ bare_app_kit_button_bordered(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -364,8 +292,7 @@ bare_app_kit_button_bordered(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool bordered;
-      err = js_get_value_bool(env, argv[1], &bordered);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "bordered", &bordered)) return NULL;
 
       button.bordered = bordered;
     }
@@ -381,14 +308,14 @@ bare_app_kit_button_transparent(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -400,8 +327,7 @@ bare_app_kit_button_transparent(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool transparent;
-      err = js_get_value_bool(env, argv[1], &transparent);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "transparent", &transparent)) return NULL;
 
       button.transparent = transparent;
     }
@@ -417,14 +343,14 @@ bare_app_kit_button_shows_border_only_while_mouse_inside(js_env_t *env, js_callb
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -436,8 +362,7 @@ bare_app_kit_button_shows_border_only_while_mouse_inside(js_env_t *env, js_callb
       assert(err == 0);
     } else {
       bool shows_border_only_while_mouse_inside;
-      err = js_get_value_bool(env, argv[1], &shows_border_only_while_mouse_inside);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "shows_border_only_while_mouse_inside", &shows_border_only_while_mouse_inside)) return NULL;
 
       button.showsBorderOnlyWhileMouseInside = shows_border_only_while_mouse_inside;
     }
@@ -453,14 +378,14 @@ bare_app_kit_button_spring_loaded(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -472,8 +397,7 @@ bare_app_kit_button_spring_loaded(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool spring_loaded;
-      err = js_get_value_bool(env, argv[1], &spring_loaded);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "spring_loaded", &spring_loaded)) return NULL;
 
       button.springLoaded = spring_loaded;
     }
@@ -489,14 +413,14 @@ bare_app_kit_button_has_destructive_action(js_env_t *env, js_callback_info_t *in
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -508,8 +432,7 @@ bare_app_kit_button_has_destructive_action(js_env_t *env, js_callback_info_t *in
       assert(err == 0);
     } else {
       bool has_destructive_action;
-      err = js_get_value_bool(env, argv[1], &has_destructive_action);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "has_destructive_action", &has_destructive_action)) return NULL;
 
       button.hasDestructiveAction = has_destructive_action;
     }
@@ -525,14 +448,14 @@ bare_app_kit_button_key_equivalent(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -540,25 +463,9 @@ bare_app_kit_button_key_equivalent(js_env_t *env, js_callback_info_t *info) {
     BareButton *button = (__bridge BareButton *) handle;
 
     if (argc == 1) {
-      NSString *key_equivalent = button.keyEquivalent;
-
-      err = js_create_string_utf8(env, (const utf8_t *) [key_equivalent UTF8String], -1, &result);
-      assert(err == 0);
+      result = bare_app_kit__from_string(env, button.keyEquivalent);
     } else {
-      size_t len;
-      err = js_get_value_string_utf8(env, argv[1], NULL, 0, &len);
-      assert(err == 0);
-
-      len += 1 /* NULL */;
-
-      char *key_equivalent = malloc(len);
-
-      err = js_get_value_string_utf8(env, argv[1], (utf8_t *) key_equivalent, len, &len);
-      assert(err == 0);
-
-      button.keyEquivalent = [NSString stringWithUTF8String:key_equivalent];
-
-      free(key_equivalent);
+      button.keyEquivalent = bare_app_kit__to_string(env, argv[1]);
     }
   }
 
@@ -572,14 +479,14 @@ bare_app_kit_button_key_equivalent_modifier_mask(js_env_t *env, js_callback_info
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -608,18 +515,17 @@ bare_app_kit_button_set_button_type(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   int32_t type;
-  err = js_get_value_int32(env, argv[1], &type);
-  assert(err == 0);
+  if (!bare_app_kit__read_int32(env, argv[1], "type", &type)) return NULL;
 
   @autoreleasepool {
     BareButton *button = (__bridge BareButton *) handle;
@@ -637,22 +543,20 @@ bare_app_kit_button_set_periodic_delay(js_env_t *env, js_callback_info_t *info) 
   size_t argc = 3;
   js_value_t *argv[3];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 3);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   double delay;
-  err = js_get_value_double(env, argv[1], &delay);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[1], "delay", &delay)) return NULL;
 
   double interval;
-  err = js_get_value_double(env, argv[2], &interval);
-  assert(err == 0);
+  if (!bare_app_kit__read_double(env, argv[2], "interval", &interval)) return NULL;
 
   @autoreleasepool {
     BareButton *button = (__bridge BareButton *) handle;
@@ -670,14 +574,14 @@ bare_app_kit_button_get_periodic_delay(js_env_t *env, js_callback_info_t *info) 
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result;
   err = js_create_object(env, &result);
@@ -714,14 +618,14 @@ bare_app_kit_button_set_next_state(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     BareButton *button = (__bridge BareButton *) handle;
@@ -739,18 +643,17 @@ bare_app_kit_button_highlight(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   bool flag;
-  err = js_get_value_bool(env, argv[1], &flag);
-  assert(err == 0);
+  if (!bare_app_kit__read_bool(env, argv[1], "flag", &flag)) return NULL;
 
   @autoreleasepool {
     BareButton *button = (__bridge BareButton *) handle;
@@ -759,4 +662,205 @@ bare_app_kit_button_highlight(js_env_t *env, js_callback_info_t *info) {
   }
 
   return NULL;
+}
+
+static js_value_t *
+bare_app_kit_button_content_tint_color(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSButton *button = (__bridge NSButton *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, button.contentTintColor);
+    } else {
+      button.contentTintColor = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_button_bezel_color(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSButton *button = (__bridge NSButton *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, button.bezelColor);
+    } else {
+      button.bezelColor = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_button_attributed_title(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSButton *button = (__bridge NSButton *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, button.attributedTitle);
+    } else {
+      button.attributedTitle = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_button_image_position(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSButton *button = (__bridge NSButton *) handle;
+
+    if (argc == 1) {
+      err = js_create_int32(env, button.imagePosition, &result);
+      assert(err == 0);
+    } else {
+      int32_t image_position;
+      if (!bare_app_kit__read_int32(env, argv[1], "image_position", &image_position)) return NULL;
+
+      button.imagePosition = image_position;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_button_image_scaling(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSButton *button = (__bridge NSButton *) handle;
+
+    if (argc == 1) {
+      err = js_create_int32(env, button.imageScaling, &result);
+      assert(err == 0);
+    } else {
+      int32_t image_scaling;
+      if (!bare_app_kit__read_int32(env, argv[1], "image_scaling", &image_scaling)) return NULL;
+
+      button.imageScaling = image_scaling;
+    }
+  }
+
+  return result;
+}
+
+static void
+bare_app_kit_button_image_position_typed(js_value_t *receiver, int32_t bare_tag, int32_t image_position, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSButton *button = (NSButton *) bare_object;
+
+    button.imagePosition = image_position;
+  }
+}
+
+static void
+bare_app_kit_button_image_scaling_typed(js_value_t *receiver, int32_t bare_tag, int32_t image_scaling, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSButton *button = (NSButton *) bare_object;
+
+    button.imageScaling = image_scaling;
+  }
 }

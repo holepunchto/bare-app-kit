@@ -4,6 +4,8 @@
 
 #import <AppKit/AppKit.h>
 
+#import "bridging.h"
+
 static js_value_t *
 bare_app_kit_control_enabled(js_env_t *env, js_callback_info_t *info) {
   int err;
@@ -11,14 +13,14 @@ bare_app_kit_control_enabled(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -30,8 +32,7 @@ bare_app_kit_control_enabled(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool enabled;
-      err = js_get_value_bool(env, argv[1], &enabled);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "enabled", &enabled)) return NULL;
 
       control.enabled = enabled;
     }
@@ -47,14 +48,14 @@ bare_app_kit_control_continuous(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -66,8 +67,7 @@ bare_app_kit_control_continuous(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool continuous;
-      err = js_get_value_bool(env, argv[1], &continuous);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "continuous", &continuous)) return NULL;
 
       control.continuous = continuous;
     }
@@ -83,14 +83,14 @@ bare_app_kit_control_ignores_multi_click(js_env_t *env, js_callback_info_t *info
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -102,8 +102,7 @@ bare_app_kit_control_ignores_multi_click(js_env_t *env, js_callback_info_t *info
       assert(err == 0);
     } else {
       bool ignores_multi_click;
-      err = js_get_value_bool(env, argv[1], &ignores_multi_click);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "ignores_multi_click", &ignores_multi_click)) return NULL;
 
       control.ignoresMultiClick = ignores_multi_click;
     }
@@ -119,14 +118,14 @@ bare_app_kit_control_highlighted(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -138,8 +137,7 @@ bare_app_kit_control_highlighted(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       bool highlighted;
-      err = js_get_value_bool(env, argv[1], &highlighted);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "highlighted", &highlighted)) return NULL;
 
       control.highlighted = highlighted;
     }
@@ -155,14 +153,14 @@ bare_app_kit_control_refuses_first_responder(js_env_t *env, js_callback_info_t *
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -174,8 +172,7 @@ bare_app_kit_control_refuses_first_responder(js_env_t *env, js_callback_info_t *
       assert(err == 0);
     } else {
       bool refuses_first_responder;
-      err = js_get_value_bool(env, argv[1], &refuses_first_responder);
-      assert(err == 0);
+      if (!bare_app_kit__read_bool(env, argv[1], "refuses_first_responder", &refuses_first_responder)) return NULL;
 
       control.refusesFirstResponder = refuses_first_responder;
     }
@@ -191,14 +188,14 @@ bare_app_kit_control_tag(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -227,14 +224,14 @@ bare_app_kit_control_size(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -246,8 +243,7 @@ bare_app_kit_control_size(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       int32_t control_size;
-      err = js_get_value_int32(env, argv[1], &control_size);
-      assert(err == 0);
+      if (!bare_app_kit__read_int32(env, argv[1], "control_size", &control_size)) return NULL;
 
       control.controlSize = control_size;
     }
@@ -263,14 +259,14 @@ bare_app_kit_control_string_value(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -278,25 +274,9 @@ bare_app_kit_control_string_value(js_env_t *env, js_callback_info_t *info) {
     NSControl *control = (__bridge NSControl *) handle;
 
     if (argc == 1) {
-      NSString *value = control.stringValue;
-
-      err = js_create_string_utf8(env, (const utf8_t *) [value UTF8String], -1, &result);
-      assert(err == 0);
+      result = bare_app_kit__from_string(env, control.stringValue);
     } else {
-      size_t len;
-      err = js_get_value_string_utf8(env, argv[1], NULL, 0, &len);
-      assert(err == 0);
-
-      len += 1 /* NULL */;
-
-      char *value = malloc(len);
-
-      err = js_get_value_string_utf8(env, argv[1], (utf8_t *) value, len, &len);
-      assert(err == 0);
-
-      control.stringValue = [NSString stringWithUTF8String:value];
-
-      free(value);
+      control.stringValue = bare_app_kit__to_string(env, argv[1]);
     }
   }
 
@@ -310,14 +290,14 @@ bare_app_kit_control_int_value(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -329,8 +309,7 @@ bare_app_kit_control_int_value(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       int32_t value;
-      err = js_get_value_int32(env, argv[1], &value);
-      assert(err == 0);
+      if (!bare_app_kit__read_int32(env, argv[1], "value", &value)) return NULL;
 
       control.intValue = value;
     }
@@ -346,14 +325,14 @@ bare_app_kit_control_integer_value(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -382,14 +361,14 @@ bare_app_kit_control_float_value(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -401,8 +380,7 @@ bare_app_kit_control_float_value(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       double value;
-      err = js_get_value_double(env, argv[1], &value);
-      assert(err == 0);
+      if (!bare_app_kit__read_double(env, argv[1], "value", &value)) return NULL;
 
       control.floatValue = value;
     }
@@ -418,14 +396,14 @@ bare_app_kit_control_double_value(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 2;
   js_value_t *argv[2];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1 || argc == 2);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   js_value_t *result = NULL;
 
@@ -437,8 +415,7 @@ bare_app_kit_control_double_value(js_env_t *env, js_callback_info_t *info) {
       assert(err == 0);
     } else {
       double value;
-      err = js_get_value_double(env, argv[1], &value);
-      assert(err == 0);
+      if (!bare_app_kit__read_double(env, argv[1], "value", &value)) return NULL;
 
       control.doubleValue = value;
     }
@@ -454,14 +431,14 @@ bare_app_kit_control_size_to_fit(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSControl *control = (__bridge NSControl *) handle;
@@ -479,14 +456,14 @@ bare_app_kit_control_perform_click(js_env_t *env, js_callback_info_t *info) {
   size_t argc = 1;
   js_value_t *argv[1];
 
-  err = js_get_callback_info(env, info, &argc, argv, NULL, NULL);
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
   assert(err == 0);
 
   assert(argc == 1);
 
   void *handle;
-  err = js_get_value_external(env, argv[0], &handle);
-  assert(err == 0);
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
 
   @autoreleasepool {
     NSControl *control = (__bridge NSControl *) handle;
@@ -495,4 +472,285 @@ bare_app_kit_control_perform_click(js_env_t *env, js_callback_info_t *info) {
   }
 
   return NULL;
+}
+
+static js_value_t *
+bare_app_kit_control_font(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, control.font);
+    } else {
+      control.font = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_control_attributed_string_value(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    if (argc == 1) {
+      result = bare_foundation_bridge(env, registry, control.attributedStringValue);
+    } else {
+      control.attributedStringValue = bare_foundation_to_object(env, registry, argv[1]);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_control_alignment(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    if (argc == 1) {
+      err = js_create_int32(env, control.alignment, &result);
+      assert(err == 0);
+    } else {
+      int32_t alignment;
+      if (!bare_app_kit__read_int32(env, argv[1], "alignment", &alignment)) return NULL;
+
+      control.alignment = alignment;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_control_line_break_mode(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    if (argc == 1) {
+      err = js_create_int32(env, control.lineBreakMode, &result);
+      assert(err == 0);
+    } else {
+      int32_t line_break_mode;
+      if (!bare_app_kit__read_int32(env, argv[1], "line_break_mode", &line_break_mode)) return NULL;
+
+      control.lineBreakMode = line_break_mode;
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_control_uses_single_line_mode(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1 || argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result = NULL;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    if (argc == 1) {
+      err = js_get_boolean(env, control.usesSingleLineMode, &result);
+      assert(err == 0);
+    } else {
+      bool uses_single_line_mode;
+      if (!bare_app_kit__read_bool(env, argv[1], "uses_single_line_mode", &uses_single_line_mode)) return NULL;
+
+      control.usesSingleLineMode = uses_single_line_mode;
+    }
+  }
+
+  return result;
+}
+
+static void
+bare_app_kit_control_alignment_typed(js_value_t *receiver, int32_t bare_tag, int32_t alignment, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSControl *control = (NSControl *) bare_object;
+
+    control.alignment = alignment;
+  }
+}
+
+static void
+bare_app_kit_control_line_break_mode_typed(js_value_t *receiver, int32_t bare_tag, int32_t line_break_mode, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSControl *control = (NSControl *) bare_object;
+
+    control.lineBreakMode = line_break_mode;
+  }
+}
+
+static void
+bare_app_kit_control_uses_single_line_mode_typed(js_value_t *receiver, int32_t bare_tag, bool uses_single_line_mode, js_typed_callback_info_t *info) {
+  int err;
+
+  bare_foundation_registry_t *registry;
+  err = js_get_typed_callback_info(info, NULL, (void **) &registry);
+  assert(err == 0);
+
+  id bare_object = bare_foundation_object(registry, bare_tag);
+
+  if (bare_object == nil) return;
+
+  @autoreleasepool {
+    NSControl *control = (NSControl *) bare_object;
+
+    control.usesSingleLineMode = uses_single_line_mode;
+  }
+}
+
+// The text object a control edits through. For a text field it is the shared
+// field editor of the window, which only exists while the field is being
+// edited. The selection and spelling settings live on it, not on the control.
+static js_value_t *
+bare_app_kit_control_current_editor(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    result = bare_foundation_bridge(env, registry, [control currentEditor]);
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_control_cell(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    NSControl *control = (__bridge NSControl *) handle;
+
+    result = bare_foundation_bridge(env, registry, control.cell);
+  }
+
+  return result;
 }
