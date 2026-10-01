@@ -92,8 +92,7 @@
 #define BARE_APP_KIT_CONTENT_TYPES_AVAILABLE(V) \
   V(CSS, UTTypeCSS, 15.0) \
   V(TAR_ARCHIVE, UTTypeTarArchive, 15.0) \
-  V(GEOJSON, UTTypeGeoJSON, 15.0) \
-  V(MARKDOWN, UTTypeMarkdown, 27.0)
+  V(GEOJSON, UTTypeGeoJSON, 15.0)
 
 enum {
 #define V(name, constant) bare_app_kit_content_type_##name,
