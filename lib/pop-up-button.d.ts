@@ -21,7 +21,7 @@ interface AppKitPopUpButton<
   get menu(): AppKitMenu | null
   set menu(value: Wrapper)
 
-  readonly itemTitles: string | null
+  readonly itemTitles: string[]
 
   addItemWithTitle(title: string | null): this
 

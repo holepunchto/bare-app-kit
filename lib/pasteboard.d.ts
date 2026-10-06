@@ -6,7 +6,7 @@ interface AppKitPasteboard {
 
   readonly changeCount: number
 
-  readonly types: string | null
+  readonly types: string[]
 
   clearContents(): number
 

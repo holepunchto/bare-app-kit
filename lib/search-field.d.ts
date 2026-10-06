@@ -12,7 +12,7 @@ interface AppKitSearchField<
 
   recentsAutosaveName: string | null
 
-  get recentSearches(): string | null
+  get recentSearches(): string[]
   set recentSearches(value: string[])
 }
 
