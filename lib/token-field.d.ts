@@ -9,7 +9,7 @@ interface AppKitTokenField<
 
   completionDelay: number
 
-  get tokens(): string | null
+  get tokens(): string[]
   set tokens(value: string[])
 }
 

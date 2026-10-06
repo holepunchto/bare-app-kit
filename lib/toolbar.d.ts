@@ -10,10 +10,10 @@ interface AppKitToolbar<
 
   addItem(item: Wrapper): this
 
-  get allowedItemIdentifiers(): string | null
+  get allowedItemIdentifiers(): string[]
   set allowedItemIdentifiers(value: string[])
 
-  get defaultItemIdentifiers(): string | null
+  get defaultItemIdentifiers(): string[]
   set defaultItemIdentifiers(value: string[])
 
   /** An `ITEM_IDENTIFIER` constant. */
@@ -25,7 +25,7 @@ interface AppKitToolbar<
   /** An `ITEM_IDENTIFIER` constant. */
   selectedItemIdentifier: string | null
 
-  readonly centeredItemIdentifiers: string | null
+  readonly centeredItemIdentifiers: string[]
 
   visible: boolean
 

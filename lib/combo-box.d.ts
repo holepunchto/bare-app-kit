@@ -26,7 +26,7 @@ interface AppKitComboBox<
 
   readonly objectValueOfSelectedItem: string | null
 
-  readonly objectValues: string | null
+  readonly objectValues: string[]
 
   addItemWithObjectValue(value: string | null): this
 

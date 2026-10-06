@@ -21,7 +21,7 @@ interface AppKitPathControl<
   get backgroundColor(): AppKitColor | null
   set backgroundColor(value: Wrapper)
 
-  get allowedTypes(): string | null
+  get allowedTypes(): string[]
   set allowedTypes(value: string[])
 
   get menu(): AppKitMenu | null
