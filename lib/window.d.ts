@@ -197,6 +197,9 @@ interface AppKitWindow<
 
   makeFirstResponder(view: Wrapper): boolean
 
+  /** Dispatch `event` to the view it is for, without going through the event queue. */
+  sendEvent(event: Wrapper): this
+
   setFrameAutosaveName(name: string | null): boolean
 
   saveFrameUsingName(name: string | null): this

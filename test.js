@@ -1,5 +1,6 @@
 require('./test/view')
 require('./test/window')
+require('./test/event')
 require('./test/layout')
 require('./test/stack-view')
 require('./test/scroll-view')

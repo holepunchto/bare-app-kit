@@ -1,3 +1,4 @@
+import { Wrapper } from 'bare-foundation-registry'
 import AppKitAppearance = require('./appearance')
 import AppKitImage = require('./image')
 import AppKitMenu = require('./menu')
@@ -52,6 +53,9 @@ interface AppKitApplication {
   numberOfWindows(): number
 
   windowAt(index: number): AppKitWindow | null
+
+  /** Add `event` to the event queue, at the front if `atStart`. */
+  postEvent(event: Wrapper, atStart?: boolean): this
 
   setActivationPolicy(policy: number): boolean
 

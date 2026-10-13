@@ -192,6 +192,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("applicationCancelUserAttentionRequest", bare_app_kit_application_cancel_user_attention_request)
   V("applicationNumberOfWindows", bare_app_kit_application_number_of_windows)
   V("applicationWindowAt", bare_app_kit_application_window_at)
+  V("applicationPostEvent", bare_app_kit_application_post_event)
   V("applicationSetActivationPolicy", bare_app_kit_application_set_activation_policy)
 
   V("attributedStringInit", bare_app_kit_attributed_string_init)
@@ -988,6 +989,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("eventCurrentMouseLocation", bare_app_kit_event_current_mouse_location)
   V("eventCurrentPressedMouseButtons", bare_app_kit_event_current_pressed_mouse_buttons)
   V("eventDoubleClickInterval", bare_app_kit_event_double_click_interval)
+  V("eventMouseEvent", bare_app_kit_event_mouse_event)
   T(
     "eventLocationInWindowInto",
     bare_app_kit_event_location_in_window_into,
@@ -4254,6 +4256,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("windowSetFrameTopLeftPoint", bare_app_kit_window_set_frame_top_left_point)
   V("windowSetContentSize", bare_app_kit_window_set_content_size)
   V("windowMakeFirstResponder", bare_app_kit_window_make_first_responder)
+  V("windowSendEvent", bare_app_kit_window_send_event)
   V("windowSetFrameAutosaveName", bare_app_kit_window_set_frame_autosave_name)
   V("windowSaveFrameUsingName", bare_app_kit_window_save_frame_using_name)
   V("windowSetFrameUsingName", bare_app_kit_window_set_frame_using_name)
