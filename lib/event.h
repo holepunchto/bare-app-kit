@@ -655,3 +655,62 @@ bare_app_kit_event_double_click_interval(js_env_t *env, js_callback_info_t *info
 
   return result;
 }
+
+static js_value_t *
+bare_app_kit_event_mouse_event(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 9;
+  js_value_t *argv[9];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 9);
+
+  int32_t type;
+  if (!bare_app_kit__read_int32(env, argv[0], "type", &type)) return NULL;
+
+  double x;
+  if (!bare_app_kit__read_double(env, argv[1], "x", &x)) return NULL;
+
+  double y;
+  if (!bare_app_kit__read_double(env, argv[2], "y", &y)) return NULL;
+
+  int32_t modifier_flags;
+  if (!bare_app_kit__read_int32(env, argv[3], "modifierFlags", &modifier_flags)) return NULL;
+
+  double timestamp;
+  if (!bare_app_kit__read_double(env, argv[4], "timestamp", &timestamp)) return NULL;
+
+  int32_t window_number;
+  if (!bare_app_kit__read_int32(env, argv[5], "windowNumber", &window_number)) return NULL;
+
+  int32_t event_number;
+  if (!bare_app_kit__read_int32(env, argv[6], "eventNumber", &event_number)) return NULL;
+
+  int32_t click_count;
+  if (!bare_app_kit__read_int32(env, argv[7], "clickCount", &click_count)) return NULL;
+
+  double pressure;
+  if (!bare_app_kit__read_double(env, argv[8], "pressure", &pressure)) return NULL;
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    NSEvent *event = [NSEvent mouseEventWithType:(NSEventType) type
+                                        location:NSMakePoint(x, y)
+                                   modifierFlags:(NSEventModifierFlags) (uint32_t) modifier_flags
+                                       timestamp:timestamp
+                                    windowNumber:window_number
+                                         context:nil
+                                     eventNumber:event_number
+                                      clickCount:click_count
+                                        pressure:pressure];
+
+    result = bare_foundation_bridge(env, registry, event);
+  }
+
+  return result;
+}

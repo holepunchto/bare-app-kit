@@ -545,6 +545,31 @@ bare_app_kit_application_window_at(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_app_kit_application_post_event(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  id event = bare_foundation_to_object(env, registry, argv[0]);
+
+  bool at_start;
+  if (!bare_app_kit__read_bool(env, argv[1], "atStart", &at_start)) return NULL;
+
+  @autoreleasepool {
+    [[NSApplication sharedApplication] postEvent:event atStart:at_start];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 bare_app_kit_application_set_activation_policy(js_env_t *env, js_callback_info_t *info) {
   int err;
 

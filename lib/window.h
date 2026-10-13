@@ -2751,6 +2751,33 @@ bare_app_kit_window_make_first_responder(js_env_t *env, js_callback_info_t *info
 }
 
 static js_value_t *
+bare_app_kit_window_send_event(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  void *handle;
+  if (bare_foundation_read_tag(env, registry, argv[0], "handle", &handle) < 0) return NULL;
+
+  id event = bare_foundation_to_object(env, registry, argv[1]);
+
+  @autoreleasepool {
+    NSWindow *window = (__bridge NSWindow *) handle;
+
+    [window sendEvent:event];
+  }
+
+  return NULL;
+}
+
+static js_value_t *
 bare_app_kit_window_set_frame_autosave_name(js_env_t *env, js_callback_info_t *info) {
   int err;
 

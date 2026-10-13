@@ -49,6 +49,18 @@ declare class AppKitEvent {
 
   static current(): AppKitEvent | null
 
+  static mouseEvent(
+    type: number,
+    x: number,
+    y: number,
+    modifierFlags: number,
+    timestamp: number,
+    windowNumber: number,
+    eventNumber?: number,
+    clickCount?: number,
+    pressure?: number
+  ): AppKitEvent | null
+
   static currentModifierFlags(): number
 
   static currentMouseLocation(): AppKitView.Point
