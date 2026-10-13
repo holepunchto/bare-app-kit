@@ -1,5 +1,4 @@
 const { test } = require('bare-tap')
-const { afterAnimationFrame } = require('bare-animation-frame')
 const { Application, Button, Event, View } = require('..')
 const { open } = require('./helpers')
 
@@ -54,7 +53,7 @@ test('sends a mouse event to the view under it', (t) => {
   ])
 })
 
-test('clicks a button through the event queue', async (t) => {
+test('clicks a button', (t) => {
   const window = open(t, 300, 200)
   const button = new Button()
 
@@ -68,13 +67,10 @@ test('clicks a button through the event queue', async (t) => {
 
   const { x, y } = button.convertPointToView(50, 15, null)
 
-  // A button tracks the mouse from the event queue until it is released, so
-  // sending the press directly would block.
-  Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_DOWN, x, y))
+  // A button tracks the mouse by reading the event queue until it is released,
+  // so the release has to be waiting there before the press is sent.
   Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_UP, x, y))
-
-  await afterAnimationFrame()
-  await afterAnimationFrame()
+  window.sendEvent(mouse(window, TYPE.LEFT_MOUSE_DOWN, x, y))
 
   t.equal(clicks, 1)
 })
