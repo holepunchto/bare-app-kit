@@ -1,4 +1,5 @@
 const { test } = require('bare-tap')
+const Pointer = require('bare-pointer')
 const { TabView, TabViewItem, View } = require('..')
 const { open } = require('./helpers')
 
@@ -56,4 +57,27 @@ test('selects an item', (t) => {
   t.ok(tabView.selectedTabViewItem === items[1], 'selected item')
   t.ok(items[1].view.window !== null, 'shows its view')
   t.equal(items[0].view.window, null, 'hides the other view')
+})
+
+test('selects a tab with the pointer', async (t) => {
+  // Equal labels keep the middle tab in the middle of the tab strip.
+  const { tabView, items } = tabs(t, 'One', 'Two', 'Six')
+  const pointer = new Pointer()
+
+  t.teardown(() => pointer.destroy())
+
+  let selected = 0
+
+  tabView.on('didSelect', () => selected++)
+
+  const content = tabView.contentRect
+  const top = tabView.flipped
+    ? content.y / 2
+    : (content.y + content.height + tabView.bounds.height) / 2
+
+  await pointer.tap(tabView, tabView.bounds.width / 2, top)
+
+  t.equal(selected, 1, 'emits')
+  t.ok(tabView.selectedTabViewItem === items[1], 'selected the middle tab')
+  t.ok(items[1].view.window !== null, 'shows its view')
 })
