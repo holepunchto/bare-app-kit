@@ -54,6 +54,7 @@
     "bare-core-animation": "^0.1.0",
     "bare-foundation": "^0.1.0",
     "bare-native-test": "^0.1.0",
+    "bare-pointer": "^0.1.1",
     "bare-tap": "^1.1.0",
     "cmake-bare": "^1.6.5",
     "cmake-fetch": "^1.4.0",

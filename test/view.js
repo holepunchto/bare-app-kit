@@ -1,4 +1,5 @@
 const { test } = require('bare-tap')
+const Pointer = require('bare-pointer')
 const { Button, View } = require('..')
 const { open } = require('./helpers')
 
@@ -159,4 +160,33 @@ test('sets the tool tip and alpha', (t) => {
   view.alphaValue = 0.5
 
   t.equal(view.alphaValue, 0.5, 'alpha')
+})
+
+test('drags across a view with the pointer', async (t) => {
+  const window = open(t, 300, 200)
+  const pointer = new Pointer()
+
+  t.teardown(() => pointer.destroy())
+
+  const view = new View({ x: 30, y: 40, width: 100, height: 80 })
+
+  window.contentView.addSubview(view)
+
+  const events = []
+
+  view.on('mouseDown', ({ x, y }) => events.push(['down', x, y]))
+  view.on('mouseDragged', ({ x, y }) => events.push(['drag', x, y]))
+  view.on('mouseUp', ({ x, y }) => events.push(['up', x, y]))
+
+  await pointer.down(view, 10, 10)
+  await pointer.move(view, 50, 40)
+  await pointer.move(view, 90, 70)
+  await pointer.up()
+
+  t.deepStrictEqual(events, [
+    ['down', 10, 10],
+    ['drag', 50, 40],
+    ['drag', 90, 70],
+    ['up', 90, 70]
+  ])
 })
