@@ -1,5 +1,4 @@
 const { test } = require('bare-tap')
-const AnimationFrameProvider = require('bare-animation-frame')
 const Pointer = require('bare-pointer')
 const {
   Button,
@@ -11,7 +10,7 @@ const {
   Switch,
   TextField
 } = require('..')
-const { open } = require('./helpers')
+const { open, shown } = require('./helpers')
 
 test('cannot create a bare control', (t) => {
   t.throws(() => new Control())
@@ -41,6 +40,8 @@ test('clicks a button with the pointer', async (t) => {
   let clicks = 0
 
   button.on('click', () => clicks++)
+
+  await shown(window)
 
   await pointer.tap(button)
 
@@ -77,6 +78,8 @@ test('does not click a disabled button with the pointer', async (t) => {
   let clicks = 0
 
   button.on('click', () => clicks++)
+
+  await shown(window)
 
   await pointer.tap(button)
 
@@ -115,6 +118,8 @@ test('checks a check box with the pointer', async (t) => {
   button.title = 'Check'
 
   window.contentView.addSubview(button)
+
+  await shown(window)
 
   await pointer.tap(button)
 
@@ -181,6 +186,8 @@ test('focuses a text field with the pointer', async (t) => {
   let focused = 0
 
   field.on('becomeFirstResponder', () => focused++)
+
+  await shown(window)
 
   await pointer.tap(field)
 
@@ -254,6 +261,8 @@ test('moves a slider to the pointer', async (t) => {
 
   slider.on('change', () => changes++)
 
+  await shown(window)
+
   await pointer.tap(slider, slider.bounds.width * 0.75)
 
   t.ok(changes > 0, 'changed')
@@ -303,7 +312,7 @@ test('steps a stepper with the pointer', async (t) => {
   const bottom = height - top
 
   // A stepper only knows where its arrows are once it has been drawn.
-  await new AnimationFrameProvider(stepper).afterAnimationFrame()
+  await shown(window)
 
   await pointer.tap(stepper, undefined, top)
 
@@ -340,6 +349,8 @@ test('toggles a switch with the pointer', async (t) => {
   let changes = 0
 
   control.on('change', () => changes++)
+
+  await shown(window)
 
   await pointer.tap(control)
 
@@ -394,6 +405,8 @@ test('selects a segment with the pointer', async (t) => {
   let changes = 0
 
   control.on('change', () => changes++)
+
+  await shown(window)
 
   await pointer.tap(control, control.bounds.width - 30)
 

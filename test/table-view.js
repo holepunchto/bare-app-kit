@@ -1,7 +1,7 @@
 const { test } = require('bare-tap')
 const Pointer = require('bare-pointer')
 const { TableColumn, TableView, TextField } = require('..')
-const { open } = require('./helpers')
+const { open, shown } = require('./helpers')
 
 test('selects a row with the pointer', async (t) => {
   const window = open(t, 300, 200)
@@ -39,6 +39,8 @@ test('selects a row with the pointer', async (t) => {
   table.on('click', () => events.push(['click', table.clickedRow]))
 
   const middle = (row) => (table.flipped ? row + 0.5 : table.numberOfRows - row - 0.5) * 24
+
+  await shown(window)
 
   await pointer.tap(table, 100, middle(2))
 

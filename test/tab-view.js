@@ -1,7 +1,7 @@
 const { test } = require('bare-tap')
 const Pointer = require('bare-pointer')
 const { TabView, TabViewItem, View } = require('..')
-const { open } = require('./helpers')
+const { open, shown } = require('./helpers')
 
 function tabs(t, ...labels) {
   const window = open(t, 300, 200)
@@ -74,6 +74,8 @@ test('selects a tab with the pointer', async (t) => {
   const top = tabView.flipped
     ? content.y / 2
     : (content.y + content.height + tabView.bounds.height) / 2
+
+  await shown(tabView.window)
 
   await pointer.tap(tabView, tabView.bounds.width / 2, top)
 
