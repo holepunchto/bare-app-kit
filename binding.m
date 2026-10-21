@@ -193,6 +193,7 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("applicationNumberOfWindows", bare_app_kit_application_number_of_windows)
   V("applicationWindowAt", bare_app_kit_application_window_at)
   V("applicationPostEvent", bare_app_kit_application_post_event)
+  V("applicationNextEventMatchingMask", bare_app_kit_application_next_event_matching_mask)
   V("applicationSetActivationPolicy", bare_app_kit_application_set_activation_policy)
 
   V("attributedStringInit", bare_app_kit_attributed_string_init)
@@ -4458,6 +4459,36 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("EVENT_TYPE_MAGNIFY", NSEventTypeMagnify)
   V("EVENT_TYPE_SWIPE", NSEventTypeSwipe)
   V("EVENT_TYPE_ROTATE", NSEventTypeRotate)
+
+#define V_MASK(name, n) \
+  { \
+    js_value_t *val; \
+    err = js_create_int64(env, (int64_t) (n), &val); \
+    assert(err == 0); \
+    err = js_set_named_property(env, exports, name, val); \
+    assert(err == 0); \
+  }
+
+  V_MASK("EVENT_MASK_LEFT_MOUSE_DOWN", NSEventMaskLeftMouseDown)
+  V_MASK("EVENT_MASK_LEFT_MOUSE_UP", NSEventMaskLeftMouseUp)
+  V_MASK("EVENT_MASK_RIGHT_MOUSE_DOWN", NSEventMaskRightMouseDown)
+  V_MASK("EVENT_MASK_RIGHT_MOUSE_UP", NSEventMaskRightMouseUp)
+  V_MASK("EVENT_MASK_MOUSE_MOVED", NSEventMaskMouseMoved)
+  V_MASK("EVENT_MASK_LEFT_MOUSE_DRAGGED", NSEventMaskLeftMouseDragged)
+  V_MASK("EVENT_MASK_RIGHT_MOUSE_DRAGGED", NSEventMaskRightMouseDragged)
+  V_MASK("EVENT_MASK_MOUSE_ENTERED", NSEventMaskMouseEntered)
+  V_MASK("EVENT_MASK_MOUSE_EXITED", NSEventMaskMouseExited)
+  V_MASK("EVENT_MASK_KEY_DOWN", NSEventMaskKeyDown)
+  V_MASK("EVENT_MASK_KEY_UP", NSEventMaskKeyUp)
+  V_MASK("EVENT_MASK_FLAGS_CHANGED", NSEventMaskFlagsChanged)
+  V_MASK("EVENT_MASK_SCROLL_WHEEL", NSEventMaskScrollWheel)
+  V_MASK("EVENT_MASK_OTHER_MOUSE_DOWN", NSEventMaskOtherMouseDown)
+  V_MASK("EVENT_MASK_OTHER_MOUSE_UP", NSEventMaskOtherMouseUp)
+  V_MASK("EVENT_MASK_MAGNIFY", NSEventMaskMagnify)
+  V_MASK("EVENT_MASK_SWIPE", NSEventMaskSwipe)
+  V_MASK("EVENT_MASK_ROTATE", NSEventMaskRotate)
+  V_MASK("EVENT_MASK_ANY", NSEventMaskAny)
+#undef V_MASK
 
   V("GRAPHICS_CONTEXT_COMPOSITING_CLEAR", NSCompositingOperationClear)
   V("GRAPHICS_CONTEXT_COMPOSITING_COPY", NSCompositingOperationCopy)

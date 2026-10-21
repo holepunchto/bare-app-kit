@@ -90,6 +90,29 @@ declare class AppKitEvent {
     readonly ROTATE: number
   }
 
+  /** `MASK` flags combined with `|`, except for `ANY`. */
+  static readonly MASK: {
+    readonly LEFT_MOUSE_DOWN: number
+    readonly LEFT_MOUSE_UP: number
+    readonly RIGHT_MOUSE_DOWN: number
+    readonly RIGHT_MOUSE_UP: number
+    readonly MOUSE_MOVED: number
+    readonly LEFT_MOUSE_DRAGGED: number
+    readonly RIGHT_MOUSE_DRAGGED: number
+    readonly MOUSE_ENTERED: number
+    readonly MOUSE_EXITED: number
+    readonly KEY_DOWN: number
+    readonly KEY_UP: number
+    readonly FLAGS_CHANGED: number
+    readonly SCROLL_WHEEL: number
+    readonly OTHER_MOUSE_DOWN: number
+    readonly OTHER_MOUSE_UP: number
+    readonly MAGNIFY: number
+    readonly SWIPE: number
+    readonly ROTATE: number
+    readonly ANY: number
+  }
+
   static readonly EVENT_MODIFIER_FLAGS: {
     readonly CAPS_LOCK: number
     readonly SHIFT: number

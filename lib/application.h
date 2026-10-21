@@ -570,6 +570,57 @@ bare_app_kit_application_post_event(js_env_t *env, js_callback_info_t *info) {
 }
 
 static js_value_t *
+bare_app_kit_application_next_event_matching_mask(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 4;
+  js_value_t *argv[4];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 4);
+
+  int64_t mask;
+  err = js_get_value_int64(env, argv[0], &mask);
+  assert(err == 0);
+
+  js_value_type_t type;
+  err = js_typeof(env, argv[1], &type);
+  assert(err == 0);
+
+  double until = 0;
+
+  if (type != js_null) {
+    err = js_get_value_double(env, argv[1], &until);
+    assert(err == 0);
+  }
+
+  bool dequeue;
+  if (!bare_app_kit__read_bool(env, argv[3], "dequeue", &dequeue)) return NULL;
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    NSDate *date = type == js_null ? [NSDate distantPast] : [NSDate dateWithTimeIntervalSince1970:until / 1000];
+
+    NSRunLoopMode mode = bare_app_kit__to_string(env, argv[2]);
+
+    NSEvent *event = [[NSApplication sharedApplication] nextEventMatchingMask:(NSEventMask) mask untilDate:date inMode:mode == nil ? NSDefaultRunLoopMode : mode dequeue:dequeue];
+
+    if (event == nil) {
+      err = js_get_null(env, &result);
+      assert(err == 0);
+    } else {
+      result = bare_foundation_bridge(env, registry, event);
+    }
+  }
+
+  return result;
+}
+
+static js_value_t *
 bare_app_kit_application_set_activation_policy(js_env_t *env, js_callback_info_t *info) {
   int err;
 

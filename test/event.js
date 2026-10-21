@@ -74,3 +74,23 @@ test('clicks a button', (t) => {
 
   t.equal(clicks, 1)
 })
+
+test('peeks at the event queue', (t) => {
+  const window = open(t, 300, 200)
+  const { LEFT_MOUSE_UP } = Event.MASK
+
+  // A mode of its own, so that nothing else runs while the queue is read.
+  const mode = 'to.holepunch.bare.app.kit.test'
+
+  Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_UP, 10, 20))
+
+  const peeked = Application.nextEventMatchingMask(LEFT_MOUSE_UP, null, mode, false)
+
+  t.equal(peeked && peeked.type, TYPE.LEFT_MOUSE_UP, 'peeked')
+  t.equal(peeked && peeked.windowNumber, window.windowNumber, 'for the window')
+
+  const taken = Application.nextEventMatchingMask(LEFT_MOUSE_UP, null, mode, true)
+
+  t.equal(taken && taken.type, TYPE.LEFT_MOUSE_UP, 'taken')
+  t.equal(Application.nextEventMatchingMask(LEFT_MOUSE_UP, null, mode, false), null, 'none left')
+})
