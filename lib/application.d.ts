@@ -1,5 +1,6 @@
 import { Wrapper } from 'bare-foundation-registry'
 import AppKitAppearance = require('./appearance')
+import AppKitEvent = require('./event')
 import AppKitImage = require('./image')
 import AppKitMenu = require('./menu')
 import AppKitWindow = require('./window')
@@ -56,6 +57,18 @@ interface AppKitApplication {
 
   /** Add `event` to the event queue, at the front if `atStart`. */
   postEvent(event: Wrapper, atStart?: boolean): this
+
+  /**
+   * The next event matching `mask`, a combination of `MASK` flags, waiting until `untilDate` for
+   * one. A `null` date does not wait, and with `dequeue` false the event is left in the queue.
+   * `mode` is a run loop mode and defaults to the default mode.
+   */
+  nextEventMatchingMask(
+    mask: number,
+    untilDate?: Date | null,
+    mode?: string | null,
+    dequeue?: boolean
+  ): AppKitEvent | null
 
   setActivationPolicy(policy: number): boolean
 
