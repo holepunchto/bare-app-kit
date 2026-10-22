@@ -44,6 +44,13 @@ interface AppKitEvent {
   readonly [handle]: Handle
 }
 
+/** A monitor added with `addLocalMonitorForEventsMatchingMask()`. */
+interface AppKitEventMonitor {
+  readonly [tag]: number
+
+  readonly [handle]: Handle
+}
+
 declare class AppKitEvent {
   protected constructor()
 
@@ -60,6 +67,18 @@ declare class AppKitEvent {
     clickCount?: number,
     pressure?: number
   ): AppKitEvent | null
+
+  /**
+   * Call `handler` with every event matching the `MASK` bits in `mask` that the
+   * application dispatches, before it is sent on. The handler returns the event
+   * to send, or `null` to drop it.
+   */
+  static addLocalMonitorForEventsMatchingMask(
+    mask: number,
+    handler: (event: AppKitEvent) => AppKitEvent | null
+  ): AppKitEventMonitor
+
+  static removeMonitor(monitor: AppKitEventMonitor): void
 
   static currentModifierFlags(): number
 
