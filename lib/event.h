@@ -714,3 +714,155 @@ bare_app_kit_event_mouse_event(js_env_t *env, js_callback_info_t *info) {
 
   return result;
 }
+
+@interface BareEventMonitor : NSObject {
+@public
+  js_env_t *env;
+  js_ref_t *handler;
+  id monitor;
+}
+
+@end
+
+@implementation BareEventMonitor
+
+- (void)dealloc {
+  int err;
+
+  if (handler != NULL) {
+    err = js_delete_reference(env, handler);
+    assert(err == 0);
+  }
+
+  [monitor release];
+
+  [super dealloc];
+}
+
+@end
+
+// An exception thrown by the handler is left pending and the event passes
+// through, as AppKit has no way to receive it.
+static NSEvent *
+bare_app_kit__event_monitor_call(BareEventMonitor *handle, bare_foundation_registry_t *registry, NSEvent *event) {
+  int err;
+
+  js_env_t *env = handle->env;
+
+  if (handle->handler == NULL) return event;
+
+  NSEvent *result = event;
+
+  js_handle_scope_t *scope;
+  err = js_open_handle_scope(env, &scope);
+  assert(err == 0);
+
+  js_value_t *fn;
+  err = js_get_reference_value(env, handle->handler, &fn);
+  assert(err == 0);
+
+  js_value_t *global;
+  err = js_get_global(env, &global);
+  assert(err == 0);
+
+  js_value_t *argv[1] = {bare_foundation_bridge(env, registry, event)};
+
+  js_value_t *returned;
+  err = js_call_function(env, global, fn, 1, argv, &returned);
+
+  if (err == 0) {
+    js_value_type_t type;
+    err = js_typeof(env, returned, &type);
+    assert(err == 0);
+
+    if (type == js_null) {
+      result = nil;
+    } else {
+      void *tag;
+      if (bare_foundation_read_tag(env, registry, returned, "event", &tag) == 0) result = (__bridge NSEvent *) tag;
+    }
+  }
+
+  err = js_close_handle_scope(env, scope);
+  assert(err == 0);
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_event_add_local_monitor(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 2;
+  js_value_t *argv[2];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 2);
+
+  int64_t mask;
+  err = js_get_value_int64(env, argv[0], &mask);
+  assert(err == 0);
+
+  js_value_t *result;
+
+  @autoreleasepool {
+    BareEventMonitor *handle = [[[BareEventMonitor alloc] init] autorelease];
+
+    handle->env = env;
+
+    err = js_create_reference(env, argv[1], 1, &handle->handler);
+    assert(err == 0);
+
+    // The block keeps the handle alive until the monitor is removed.
+    id monitor = [NSEvent addLocalMonitorForEventsMatchingMask:(NSEventMask) mask
+                                                       handler:^NSEvent *(NSEvent *event) {
+                                                         return bare_app_kit__event_monitor_call(handle, registry, event);
+                                                       }];
+
+    handle->monitor = [monitor retain];
+
+    result = bare_foundation_bridge(env, registry, handle);
+  }
+
+  return result;
+}
+
+static js_value_t *
+bare_app_kit_event_remove_monitor(js_env_t *env, js_callback_info_t *info) {
+  int err;
+
+  size_t argc = 1;
+  js_value_t *argv[1];
+
+  bare_foundation_registry_t *registry;
+  err = js_get_callback_info(env, info, &argc, argv, NULL, (void **) &registry);
+  assert(err == 0);
+
+  assert(argc == 1);
+
+  void *tag;
+  if (bare_foundation_read_tag(env, registry, argv[0], "monitor", &tag) < 0) return NULL;
+
+  @autoreleasepool {
+    BareEventMonitor *handle = (__bridge BareEventMonitor *) tag;
+
+    if (handle->monitor != nil) {
+      [NSEvent removeMonitor:handle->monitor];
+
+      [handle->monitor release];
+      handle->monitor = nil;
+    }
+
+    if (handle->handler != NULL) {
+      err = js_delete_reference(env, handle->handler);
+      assert(err == 0);
+
+      handle->handler = NULL;
+    }
+  }
+
+  return NULL;
+}

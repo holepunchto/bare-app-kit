@@ -991,6 +991,8 @@ bare_app_kit_exports(js_env_t *env, js_value_t *exports) {
   V("eventCurrentPressedMouseButtons", bare_app_kit_event_current_pressed_mouse_buttons)
   V("eventDoubleClickInterval", bare_app_kit_event_double_click_interval)
   V("eventMouseEvent", bare_app_kit_event_mouse_event)
+  V("eventAddLocalMonitor", bare_app_kit_event_add_local_monitor)
+  V("eventRemoveMonitor", bare_app_kit_event_remove_monitor)
   T(
     "eventLocationInWindowInto",
     bare_app_kit_event_location_in_window_into,

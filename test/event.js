@@ -94,3 +94,61 @@ test('peeks at the event queue', (t) => {
   t.equal(taken && taken.type, TYPE.LEFT_MOUSE_UP, 'taken')
   t.equal(Application.nextEventMatchingMask(LEFT_MOUSE_UP, null, mode, false), null, 'none left')
 })
+
+test('monitors the events the application dispatches', async (t) => {
+  const window = open(t, 300, 200)
+
+  const seen = await new Promise((resolve) => {
+    const monitor = Event.addLocalMonitorForEventsMatchingMask(
+      Event.MASK.LEFT_MOUSE_UP,
+      (event) => {
+        Event.removeMonitor(monitor)
+
+        resolve(event)
+
+        return event
+      }
+    )
+
+    Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_UP, 10, 20))
+  })
+
+  t.equal(seen.type, TYPE.LEFT_MOUSE_UP)
+  t.equal(seen.windowNumber, window.windowNumber)
+})
+
+test('a monitor drops an event by returning null', async (t) => {
+  const window = open(t, 300, 200)
+  const view = new View({ x: 30, y: 40, width: 50, height: 60 })
+
+  window.contentView.addSubview(view)
+
+  const events = []
+
+  view.on('mouseDown', () => events.push('down'))
+
+  const { x, y } = view.convertPointToView(10, 20, null)
+  const { LEFT_MOUSE_DOWN, LEFT_MOUSE_UP } = Event.MASK
+
+  // The release is dispatched after the press, so the press has been dropped
+  // by the time the monitor sees the release.
+  await new Promise((resolve) => {
+    const monitor = Event.addLocalMonitorForEventsMatchingMask(
+      LEFT_MOUSE_DOWN | LEFT_MOUSE_UP,
+      (event) => {
+        if (event.type === TYPE.LEFT_MOUSE_DOWN) return null
+
+        Event.removeMonitor(monitor)
+
+        resolve()
+
+        return event
+      }
+    )
+
+    Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_DOWN, x, y))
+    Application.postEvent(mouse(window, TYPE.LEFT_MOUSE_UP, x, y))
+  })
+
+  t.deepStrictEqual(events, [])
+})
