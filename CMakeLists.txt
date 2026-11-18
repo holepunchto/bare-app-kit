@@ -2,10 +2,11 @@ cmake_minimum_required(VERSION 4.0)
 
 find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
 find_package(cmake-fetch REQUIRED PATHS node_modules/cmake-fetch)
+find_package(cmake-prelude REQUIRED PATHS node_modules/cmake-prelude)
 
-project(bare_app_kit C OBJC)
+project(bare_app_kit LANGUAGES C OBJC VERSION 0.3.4)
 
-fetch_package("github:holepunchto/bare@1.38.0")
+fetch_package("github:holepunchto/bare@1.38.0" SOURCE_DIR bare)
 fetch_package("github:holepunchto/libpath")
 
 add_bare_module(bare_app_kit)
@@ -29,43 +30,32 @@ target_link_libraries(
     "-framework UniformTypeIdentifiers"
 )
 
-add_executable(bare_runtime)
+bare_target(target)
 
-target_sources(
+add_executable_target(
   bare_runtime
-  PRIVATE
+  SOURCES
     lib/runtime.m
+  LINK
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare_static>
+    rlimit_static
+    path_static
+    "-framework AppKit"
+  EXPORTS_FROM
+    "${bare}/src/exports.json"
+  RPATH
+    ../Frameworks
+  DESTINATION
+    "${target}"
+  EXPORT OFF
 )
 
-set(bare_runtime_rpath "@loader_path/../Frameworks")
-
 set_target_properties(
-  bare_runtime
+  bare_runtime_executable
   PROPERTIES
   C_STANDARD 99
   OBJC_STANDARD 99
   POSITION_INDEPENDENT_CODE ON
   OUTPUT_NAME bare
-  INSTALL_RPATH "${bare_runtime_rpath}"
   BUILD_WITH_INSTALL_RPATH ON
-  ENABLE_EXPORTS ON
 )
-
-target_link_libraries(
-  bare_runtime
-  PUBLIC
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare_static>
-  PRIVATE
-    rlimit_static
-    path_static
-)
-
-target_link_libraries(
-  bare_runtime
-  PRIVATE
-    "-framework AppKit"
-)
-
-bare_target(target)
-
-install(TARGETS bare_runtime RUNTIME DESTINATION ${target})
