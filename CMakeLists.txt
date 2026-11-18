@@ -6,7 +6,7 @@ find_package(cmake-prelude REQUIRED PATHS node_modules/cmake-prelude)
 
 project(bare_app_kit LANGUAGES C OBJC VERSION 0.3.4)
 
-fetch_package("github:holepunchto/bare@1.38.0" SOURCE_DIR bare)
+fetch_package("github:holepunchto/bare@1.38.0")
 fetch_package("github:holepunchto/libpath")
 
 add_bare_module(bare_app_kit)
@@ -41,8 +41,9 @@ add_executable_target(
     rlimit_static
     path_static
     "-framework AppKit"
-  EXPORTS_FROM
-    "${bare}/src/exports.json"
+    bare::exports
+  EXPORTS
+    bare_native_terminates_after_last_window_closed
   RPATH
     ../Frameworks
   DESTINATION
