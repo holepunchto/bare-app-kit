@@ -56,8 +56,9 @@
     "bare-native-test": "^0.1.0",
     "bare-pointer": "^0.1.1",
     "bare-tap": "^1.1.0",
-    "cmake-bare": "^1.6.5",
+    "cmake-bare": "^1.17.0",
     "cmake-fetch": "^1.4.0",
+    "cmake-prelude": "^0.1.9",
     "lunte": "^1.8.0",
     "prettier": "^3.4.1",
     "prettier-config-holepunch": "^2.0.0"

@@ -2,18 +2,20 @@ cmake_minimum_required(VERSION 4.0)
 
 find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
 find_package(cmake-fetch REQUIRED PATHS node_modules/cmake-fetch)
+find_package(cmake-prelude REQUIRED PATHS node_modules/cmake-prelude)
 
 project(bare_app_kit C OBJC)
 
-fetch_package("github:holepunchto/bare@1.35.1")
-fetch_package("github:holepunchto/libpath")
+fetch_package("github:holepunchto/bare@1.38.0")
+fetch_package("github:holepunchto/libpath#a68d099")
 
-add_bare_module(bare_app_kit)
-
-target_sources(
-  ${bare_app_kit}
-  PRIVATE
+add_bare_module(
+  bare_app_kit
+  SOURCES
     binding.m
+  LINK
+    "-framework AppKit"
+    "-framework UniformTypeIdentifiers"
 )
 
 target_include_directories(
@@ -22,50 +24,28 @@ target_include_directories(
     node_modules/bare-foundation-registry/lib
 )
 
-target_link_libraries(
-  ${bare_app_kit}
-  PUBLIC
-    "-framework AppKit"
-    "-framework UniformTypeIdentifiers"
-)
-
-add_executable(bare_runtime)
-
-target_sources(
-  bare_runtime
-  PRIVATE
-    lib/runtime.m
-)
-
-set(bare_runtime_rpath "@loader_path/../Frameworks")
-
-set_target_properties(
-  bare_runtime
-  PROPERTIES
-  C_STANDARD 99
-  OBJC_STANDARD 99
-  POSITION_INDEPENDENT_CODE ON
-  OUTPUT_NAME bare
-  INSTALL_RPATH "${bare_runtime_rpath}"
-  BUILD_WITH_INSTALL_RPATH ON
-  ENABLE_EXPORTS ON
-)
-
-target_link_libraries(
-  bare_runtime
-  PUBLIC
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare_static>
-  PRIVATE
-    rlimit_static
-    path_static
-)
-
-target_link_libraries(
-  bare_runtime
-  PRIVATE
-    "-framework AppKit"
-)
-
 bare_target(target)
 
-install(TARGETS bare_runtime RUNTIME DESTINATION ${target})
+add_executable_target(
+  bare_runtime
+  SOURCES
+    lib/runtime.m
+  LINK
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare::static>
+    bare::exports
+    rlimit::static
+    path::static
+    "-framework AppKit"
+  EXPORTS
+    bare_native_terminates_after_last_window_closed
+  RPATH ../Frameworks
+  DESTINATION ${target}
+  OUTPUT_DIRECTORY bin
+  EXPORT OFF
+)
+
+set_target_properties(
+  bare_runtime_executable
+  PROPERTIES
+  OUTPUT_NAME bare
+)
