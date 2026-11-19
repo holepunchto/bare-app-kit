@@ -4,30 +4,24 @@ find_package(cmake-bare REQUIRED PATHS node_modules/cmake-bare)
 find_package(cmake-fetch REQUIRED PATHS node_modules/cmake-fetch)
 find_package(cmake-prelude REQUIRED PATHS node_modules/cmake-prelude)
 
-project(bare_app_kit LANGUAGES C OBJC VERSION 0.3.4)
+project(bare_app_kit C OBJC)
 
 fetch_package("github:holepunchto/bare@1.38.0")
-fetch_package("github:holepunchto/libpath")
+fetch_package("github:holepunchto/libpath#a68d099")
 
-add_bare_module(bare_app_kit)
-
-target_sources(
-  ${bare_app_kit}
-  PRIVATE
+add_bare_module(
+  bare_app_kit
+  SOURCES
     binding.m
+  LINK
+    "-framework AppKit"
+    "-framework UniformTypeIdentifiers"
 )
 
 target_include_directories(
   ${bare_app_kit}
   PRIVATE
     node_modules/bare-foundation-registry/lib
-)
-
-target_link_libraries(
-  ${bare_app_kit}
-  PUBLIC
-    "-framework AppKit"
-    "-framework UniformTypeIdentifiers"
 )
 
 bare_target(target)
@@ -37,26 +31,21 @@ add_executable_target(
   SOURCES
     lib/runtime.m
   LINK
-    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare_static>
-    rlimit_static
-    path_static
-    "-framework AppKit"
+    $<LINK_LIBRARY:WHOLE_ARCHIVE,bare::static>
     bare::exports
+    rlimit::static
+    path::static
+    "-framework AppKit"
   EXPORTS
     bare_native_terminates_after_last_window_closed
-  RPATH
-    ../Frameworks
-  DESTINATION
-    "${target}"
+  RPATH ../Frameworks
+  DESTINATION ${target}
+  OUTPUT_DIRECTORY bin
   EXPORT OFF
 )
 
 set_target_properties(
   bare_runtime_executable
   PROPERTIES
-  C_STANDARD 99
-  OBJC_STANDARD 99
-  POSITION_INDEPENDENT_CODE ON
   OUTPUT_NAME bare
-  BUILD_WITH_INSTALL_RPATH ON
 )
