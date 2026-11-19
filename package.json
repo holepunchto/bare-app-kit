@@ -1,6 +1,6 @@
 {
   "name": "bare-app-kit",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "AppKit bindings and runtime for Bare",
   "exports": {
     "./package": "./package.json",
