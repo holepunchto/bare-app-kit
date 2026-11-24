@@ -150,7 +150,7 @@ bare_app_kit__to_string(js_env_t *env, js_value_t *value) {
   err = js_get_value_string_utf8(env, value, (utf8_t *) data, len, &len);
   assert(err == 0);
 
-  NSString *result = [NSString stringWithUTF8String:data];
+  NSString *result = [[[NSString alloc] initWithBytes:data length:len encoding:NSUTF8StringEncoding] autorelease];
 
   free(data);
 
@@ -223,7 +223,7 @@ bare_app_kit__handler(js_env_t *env, js_value_t *receiver, const char *name, js_
 // it builds the layer tree, without changing any frame. A view says when it is
 // about to draw, which is after that, so the layer can be restored then.
 #define BARE_APP_KIT_REPORTS_WILL_DRAW(bit) \
-  -(void)viewWillDraw { \
+  -(void) viewWillDraw { \
     [super viewWillDraw]; \
 \
     if ((mask & (bit)) == 0) return; \
